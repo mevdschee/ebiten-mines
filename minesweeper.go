@@ -102,10 +102,27 @@ type game struct {
 	bombs   int
 	holding int
 	tiles   tiles
+	field   [][]int
 }
 
 type transform struct {
 	src, dst image.Rectangle
+}
+
+func loadImageFromString(b64 string) (*ebiten.Image, error) {
+	b64 = strings.ReplaceAll(b64, "\n", "")
+	b64 = strings.ReplaceAll(b64, "\t", "")
+	b64 = strings.ReplaceAll(b64, " ", "")
+	bin, err := base64.StdEncoding.DecodeString(b64)
+	if err != nil {
+		return nil, err
+	}
+	img, err := png.Decode(bytes.NewReader(bin))
+	if err != nil {
+		return nil, err
+	}
+	img2 := ebiten.NewImageFromImage(img)
+	return img2, err
 }
 
 func (g *game) Update() error {
@@ -117,7 +134,6 @@ func (g *game) loadBackgroundTile(tilesImage *ebiten.Image) {
 	h := g.height
 	width, height := g.getSize()
 	background := ebiten.NewImage(width, height)
-	background.Fill(color.RGBA{0xcc, 0xcc, 0xcc, 0xcc})
 	transforms := []transform{
 		{
 			image.Rectangle{image.Point{0, 82}, image.Point{12, 93}},
@@ -213,28 +229,33 @@ func (g *game) init() *game {
 		g.tiles.buttons[x] = tilesImage.SubImage(image.Rect(x*27, 55, x*27+26, 81)).(*ebiten.Image)
 	}
 	g.loadBackgroundTile(tilesImage)
+	g.initField()
 	return g
 }
 
-func loadImageFromString(b64 string) (*ebiten.Image, error) {
-	b64 = strings.ReplaceAll(b64, "\n", "")
-	b64 = strings.ReplaceAll(b64, "\t", "")
-	b64 = strings.ReplaceAll(b64, " ", "")
-	bin, err := base64.StdEncoding.DecodeString(b64)
-	if err != nil {
-		return nil, err
+func (g *game) initField() {
+	g.field = make([][]int, g.width)
+	for x := range g.field {
+		g.field[x] = make([]int, g.height)
 	}
-	img, err := png.Decode(bytes.NewReader(bin))
-	if err != nil {
-		return nil, err
+}
+
+func (g *game) drawField(screen *ebiten.Image) {
+	for y := 0; y < g.height; y++ {
+		for x := 0; x < g.width; x++ {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(float64(12+x*16), float64(11+33+11+y*16))
+			screen.DrawImage(g.tiles.icons[g.field[x][y]], op)
+		}
 	}
-	img2 := ebiten.NewImageFromImage(img)
-	return img2, err
 }
 
 func (g *game) Draw(screen *ebiten.Image) {
+	screen.Clear()
+	screen.Fill(color.RGBA{0xcc, 0xcc, 0xcc, 0xcc})
 	op := &ebiten.DrawImageOptions{}
 	screen.DrawImage(g.tiles.background, op)
+	g.drawField(screen)
 }
 
 func (g *game) getSize() (int, int) {
@@ -248,15 +269,15 @@ func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 	ebiten.SetWindowTitle("Minesweeper.go")
 	game := &game{
-		scale:   4,
-		width:   8,
-		height:  8,
+		scale:   3,
+		width:   9,
+		height:  9,
 		bombs:   10,
 		holding: 15,
 	}
 	width, height := game.getSize()
 	ebiten.SetWindowSize(game.scale*width, game.scale*height)
 	if err := ebiten.RunGame(game.init()); err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v\n", err)
 	}
 }
