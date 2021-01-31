@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 var skin = `
@@ -107,6 +108,7 @@ type game struct {
 	bombsLeft     int
 	buttonState   int
 	secondsPassed int
+	hitAreas      map[string]image.Rectangle
 }
 
 type transform struct {
@@ -129,7 +131,16 @@ func loadImageFromString(b64 string) (*ebiten.Image, error) {
 	return img2, err
 }
 
+func (g *game) onPress(button ebiten.MouseButton) {
+
+}
+
 func (g *game) Update() error {
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+
+	}
+	x, y := ebiten.CursorPosition()
+	log.Printf("%d, %d\n", x, y)
 	return nil
 }
 
@@ -139,67 +150,21 @@ func (g *game) loadBackgroundTile(spritesImage *ebiten.Image) {
 	width, height := g.getSize()
 	background := ebiten.NewImage(width, height)
 	transforms := []transform{
-		{
-			image.Rectangle{image.Point{0, 82}, image.Point{12, 93}},
-			image.Rectangle{image.Point{0, 0}, image.Point{12, 11}},
-		},
-		{
-			image.Rectangle{image.Point{13, 82}, image.Point{14, 93}},
-			image.Rectangle{image.Point{12, 0}, image.Point{12 + w*16, 11}},
-		},
-		{
-			image.Rectangle{image.Point{15, 82}, image.Point{27, 93}},
-			image.Rectangle{image.Point{12 + w*16, 0}, image.Point{12 + w*16 + 12, 11}},
-		},
-		{
-			image.Rectangle{image.Point{0, 94}, image.Point{12, 95}},
-			image.Rectangle{image.Point{0, 11}, image.Point{12, 11 + 33}},
-		},
-		{
-			image.Rectangle{image.Point{15, 94}, image.Point{27, 95}},
-			image.Rectangle{image.Point{12 + w*16, 11}, image.Point{12 + w*16 + 12, 11 + 33}},
-		},
-		{
-			image.Rectangle{image.Point{0, 96}, image.Point{12, 107}},
-			image.Rectangle{image.Point{0, 11 + 33}, image.Point{12, 11 + 33 + 11}},
-		},
-
-		{
-			image.Rectangle{image.Point{13, 96}, image.Point{14, 107}},
-			image.Rectangle{image.Point{12, 11 + 33}, image.Point{12 + w*16, 11 + 33 + 11}},
-		},
-		{
-			image.Rectangle{image.Point{15, 96}, image.Point{27, 107}},
-			image.Rectangle{image.Point{12 + w*16, 11 + 33}, image.Point{12 + w*16 + 12, 11 + 33 + 11}},
-		},
-		{
-			image.Rectangle{image.Point{0, 108}, image.Point{12, 109}},
-			image.Rectangle{image.Point{0, 11 + 33 + 11}, image.Point{12, 11 + 33 + 11 + h*16}},
-		},
-		{
-			image.Rectangle{image.Point{15, 108}, image.Point{27, 109}},
-			image.Rectangle{image.Point{12 + w*16, 11 + 33 + 11}, image.Point{12 + w*16 + 12, 11 + 33 + 11 + h*16}},
-		},
-		{
-			image.Rectangle{image.Point{0, 110}, image.Point{12, 121}},
-			image.Rectangle{image.Point{0, 11 + 33 + 11 + h*16}, image.Point{12, 11 + 33 + 11 + h*16 + 11}},
-		},
-		{
-			image.Rectangle{image.Point{13, 110}, image.Point{14, 121}},
-			image.Rectangle{image.Point{12, 11 + 33 + 11 + h*16}, image.Point{12 + w*16, 11 + 33 + 11 + h*16 + 11}},
-		},
-		{
-			image.Rectangle{image.Point{15, 110}, image.Point{27, 121}},
-			image.Rectangle{image.Point{12 + w*16, 11 + 33 + 11 + h*16}, image.Point{12 + w*16 + 12, 11 + 33 + 11 + h*16 + 11}},
-		},
-		{
-			image.Rectangle{image.Point{28, 82}, image.Point{69, 107}},
-			image.Rectangle{image.Point{12 + 4, 11 + 4}, image.Point{12 + 4 + 41, 11 + 4 + 25}},
-		},
-		{
-			image.Rectangle{image.Point{28, 82}, image.Point{69, 107}},
-			image.Rectangle{image.Point{12 + w*16 - 4 - 41, 11 + 4}, image.Point{12 + w*16 - 4, 11 + 4 + 25}},
-		},
+		{image.Rect(0, 82, 12, 93), image.Rect(0, 0, 12, 11)},
+		{image.Rect(13, 82, 14, 93), image.Rect(12, 0, 12+w*16, 11)},
+		{image.Rect(15, 82, 27, 93), image.Rect(12+w*16, 0, 12+w*16+12, 11)},
+		{image.Rect(0, 94, 12, 95), image.Rect(0, 11, 12, 11+33)},
+		{image.Rect(15, 94, 27, 95), image.Rect(12+w*16, 11, 12+w*16+12, 11+33)},
+		{image.Rect(0, 96, 12, 107), image.Rect(0, 11+33, 12, 11+33+11)},
+		{image.Rect(13, 96, 14, 107), image.Rect(12, 11+33, 12+w*16, 11+33+11)},
+		{image.Rect(15, 96, 27, 107), image.Rect(12+w*16, 11+33, 12+w*16+12, 11+33+11)},
+		{image.Rect(0, 108, 12, 109), image.Rect(0, 11+33+11, 12, 11+33+11+h*16)},
+		{image.Rect(15, 108, 27, 109), image.Rect(12+w*16, 11+33+11, 12+w*16+12, 11+33+11+h*16)},
+		{image.Rect(0, 110, 12, 121), image.Rect(0, 11+33+11+h*16, 12, 11+33+11+h*16+11)},
+		{image.Rect(13, 110, 14, 121), image.Rect(12, 11+33+11+h*16, 12+w*16, 11+33+11+h*16+11)},
+		{image.Rect(15, 110, 27, 121), image.Rect(12+w*16, 11+33+11+h*16, 12+w*16+12, 11+33+11+h*16+11)},
+		{image.Rect(28, 82, 69, 107), image.Rect(12+4, 11+4, 12+4+41, 11+4+25)},
+		{image.Rect(28, 82, 69, 107), image.Rect(12+w*16-4-41, 11+4, 12+w*16-4, 11+4+25)},
 	}
 	for _, t := range transforms {
 		source := spritesImage.SubImage(t.src).(*ebiten.Image)
@@ -235,6 +200,7 @@ func (g *game) init() *game {
 	g.loadBackgroundTile(spritesImage)
 	g.initTiles()
 	g.bombsLeft = g.bombs
+	g.hitAreas = make(map[string]image.Rectangle)
 	return g
 }
 
@@ -253,6 +219,7 @@ func (g *game) drawBackground(screen *ebiten.Image) {
 }
 
 func (g *game) drawTiles(screen *ebiten.Image) {
+	g.hitAreas["tiles"] = image.Rect(12, 11+33+11, 12+g.width*16, 11+33+11+g.height*16)
 	for y := 0; y < g.height; y++ {
 		for x := 0; x < g.width; x++ {
 			op := &ebiten.DrawImageOptions{}
@@ -272,8 +239,9 @@ func (g *game) drawBombsLeft(screen *ebiten.Image) {
 }
 
 func (g *game) drawButton(screen *ebiten.Image) {
-	op := &ebiten.DrawImageOptions{}
 	width, _ := g.getSize()
+	g.hitAreas["button"] = image.Rect(width/2-13, 11+4, width/2-13, 11+4+26)
+	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(width/2-13), float64(11+4))
 	screen.DrawImage(g.sprites.buttons[g.buttonState], op)
 }
