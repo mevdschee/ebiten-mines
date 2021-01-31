@@ -132,11 +132,11 @@ func loadImageFromString(b64 string) (*ebiten.Image, error) {
 }
 
 func (g *game) onPressButton() {
-	log.Println("press button")
+	g.buttonState = buttonPressed
 }
 
 func (g *game) onReleaseButton() {
-	log.Println("release button")
+	g.init()
 }
 
 func (g *game) getHitArea() string {
@@ -221,6 +221,7 @@ func (g *game) init() *game {
 	}
 	g.loadBackgroundTile(spritesImage)
 	g.initTiles()
+	g.buttonState = buttonPlaying
 	g.bombsLeft = g.bombs
 	g.hitAreas = make(map[string]image.Rectangle)
 	return g
