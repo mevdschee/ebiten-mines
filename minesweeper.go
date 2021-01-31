@@ -131,16 +131,38 @@ func loadImageFromString(b64 string) (*ebiten.Image, error) {
 	return img2, err
 }
 
-func (g *game) onPress(button ebiten.MouseButton) {
+func (g *game) onPressButton() {
+	log.Println("press button")
+}
 
+func (g *game) onReleaseButton() {
+	log.Println("release button")
+}
+
+func (g *game) getHitArea() string {
+	x, y := ebiten.CursorPosition()
+	cursor := image.Point{x, y}
+	for area, rect := range g.hitAreas {
+		if cursor.In(rect) {
+			return area
+		}
+	}
+	return ""
 }
 
 func (g *game) Update() error {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-
+		switch g.getHitArea() {
+		case "button":
+			g.onPressButton()
+		}
 	}
-	x, y := ebiten.CursorPosition()
-	log.Printf("%d, %d\n", x, y)
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+		switch g.getHitArea() {
+		case "button":
+			g.onReleaseButton()
+		}
+	}
 	return nil
 }
 
@@ -240,7 +262,7 @@ func (g *game) drawBombsLeft(screen *ebiten.Image) {
 
 func (g *game) drawButton(screen *ebiten.Image) {
 	width, _ := g.getSize()
-	g.hitAreas["button"] = image.Rect(width/2-13, 11+4, width/2-13, 11+4+26)
+	g.hitAreas["button"] = image.Rect(width/2-13, 11+4, width/2+13, 11+4+26)
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(width/2-13), float64(11+4))
 	screen.DrawImage(g.sprites.buttons[g.buttonState], op)
