@@ -102,7 +102,7 @@ type game struct {
 	bombs   int
 	holding int
 	sprites sprites
-	field   [][]int
+	tiles   [][]int
 }
 
 type transform struct {
@@ -229,14 +229,14 @@ func (g *game) init() *game {
 		g.sprites.buttons[x] = spritesImage.SubImage(image.Rect(x*27, 55, x*27+26, 81)).(*ebiten.Image)
 	}
 	g.loadBackgroundTile(spritesImage)
-	g.initField()
+	g.initTiles()
 	return g
 }
 
-func (g *game) initField() {
-	g.field = make([][]int, g.width)
-	for x := range g.field {
-		g.field[x] = make([]int, g.height)
+func (g *game) initTiles() {
+	g.tiles = make([][]int, g.width)
+	for x := range g.tiles {
+		g.tiles[x] = make([]int, g.height)
 	}
 }
 
@@ -247,19 +247,19 @@ func (g *game) drawBackground(screen *ebiten.Image) {
 	screen.DrawImage(g.sprites.background, op)
 }
 
-func (g *game) drawField(screen *ebiten.Image) {
+func (g *game) drawTiles(screen *ebiten.Image) {
 	for y := 0; y < g.height; y++ {
 		for x := 0; x < g.width; x++ {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(12+x*16), float64(11+33+11+y*16))
-			screen.DrawImage(g.sprites.icons[g.field[x][y]], op)
+			screen.DrawImage(g.sprites.icons[g.tiles[x][y]], op)
 		}
 	}
 }
 
 func (g *game) Draw(screen *ebiten.Image) {
 	g.drawBackground(screen)
-	g.drawField(screen)
+	g.drawTiles(screen)
 }
 
 func (g *game) getSize() (int, int) {
