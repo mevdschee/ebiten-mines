@@ -240,6 +240,13 @@ func (g *game) initField() {
 	}
 }
 
+func (g *game) drawBackground(screen *ebiten.Image) {
+	screen.Clear()
+	screen.Fill(color.RGBA{0xcc, 0xcc, 0xcc, 0xcc})
+	op := &ebiten.DrawImageOptions{}
+	screen.DrawImage(g.sprites.background, op)
+}
+
 func (g *game) drawField(screen *ebiten.Image) {
 	for y := 0; y < g.height; y++ {
 		for x := 0; x < g.width; x++ {
@@ -251,10 +258,7 @@ func (g *game) drawField(screen *ebiten.Image) {
 }
 
 func (g *game) Draw(screen *ebiten.Image) {
-	screen.Clear()
-	screen.Fill(color.RGBA{0xcc, 0xcc, 0xcc, 0xcc})
-	op := &ebiten.DrawImageOptions{}
-	screen.DrawImage(g.sprites.background, op)
+	g.drawBackground(screen)
 	g.drawField(screen)
 }
 
