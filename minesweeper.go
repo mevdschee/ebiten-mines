@@ -87,7 +87,7 @@ const (
 	stateWon
 )
 
-type tiles struct {
+type sprites struct {
 	numbers    []*ebiten.Image
 	icons      []*ebiten.Image
 	digits     []*ebiten.Image
@@ -101,7 +101,7 @@ type game struct {
 	height  int
 	bombs   int
 	holding int
-	tiles   tiles
+	sprites sprites
 	field   [][]int
 }
 
@@ -129,7 +129,7 @@ func (g *game) Update() error {
 	return nil
 }
 
-func (g *game) loadBackgroundTile(tilesImage *ebiten.Image) {
+func (g *game) loadBackgroundTile(spritesImage *ebiten.Image) {
 	w := g.width
 	h := g.height
 	width, height := g.getSize()
@@ -198,37 +198,37 @@ func (g *game) loadBackgroundTile(tilesImage *ebiten.Image) {
 		},
 	}
 	for _, t := range transforms {
-		source := tilesImage.SubImage(t.src).(*ebiten.Image)
+		source := spritesImage.SubImage(t.src).(*ebiten.Image)
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Scale(float64(t.dst.Size().X)/float64(t.src.Size().X), float64(t.dst.Size().Y)/float64(t.src.Size().Y))
 		op.GeoM.Translate(float64(t.dst.Min.X), float64(t.dst.Min.Y))
 		background.DrawImage(source, op)
 	}
-	g.tiles.background = background
+	g.sprites.background = background
 }
 
 func (g *game) init() *game {
-	tilesImage, err := loadImageFromString(skin)
+	spritesImage, err := loadImageFromString(skin)
 	if err != nil {
 		log.Fatalln("Could not load skin")
 	}
-	g.tiles.numbers = make([]*ebiten.Image, 9)
-	for x := range g.tiles.numbers {
-		g.tiles.numbers[x] = tilesImage.SubImage(image.Rect(x*16, 0, x*16+16, 16)).(*ebiten.Image)
+	g.sprites.numbers = make([]*ebiten.Image, 9)
+	for x := range g.sprites.numbers {
+		g.sprites.numbers[x] = spritesImage.SubImage(image.Rect(x*16, 0, x*16+16, 16)).(*ebiten.Image)
 	}
-	g.tiles.icons = make([]*ebiten.Image, 8)
-	for x := range g.tiles.icons {
-		g.tiles.icons[x] = tilesImage.SubImage(image.Rect(x*16, 16, x*16+16, 32)).(*ebiten.Image)
+	g.sprites.icons = make([]*ebiten.Image, 8)
+	for x := range g.sprites.icons {
+		g.sprites.icons[x] = spritesImage.SubImage(image.Rect(x*16, 16, x*16+16, 32)).(*ebiten.Image)
 	}
-	g.tiles.digits = make([]*ebiten.Image, 11)
-	for x := range g.tiles.digits {
-		g.tiles.digits[x] = tilesImage.SubImage(image.Rect(x*12, 33, x*12+11, 54)).(*ebiten.Image)
+	g.sprites.digits = make([]*ebiten.Image, 11)
+	for x := range g.sprites.digits {
+		g.sprites.digits[x] = spritesImage.SubImage(image.Rect(x*12, 33, x*12+11, 54)).(*ebiten.Image)
 	}
-	g.tiles.buttons = make([]*ebiten.Image, 5)
-	for x := range g.tiles.buttons {
-		g.tiles.buttons[x] = tilesImage.SubImage(image.Rect(x*27, 55, x*27+26, 81)).(*ebiten.Image)
+	g.sprites.buttons = make([]*ebiten.Image, 5)
+	for x := range g.sprites.buttons {
+		g.sprites.buttons[x] = spritesImage.SubImage(image.Rect(x*27, 55, x*27+26, 81)).(*ebiten.Image)
 	}
-	g.loadBackgroundTile(tilesImage)
+	g.loadBackgroundTile(spritesImage)
 	g.initField()
 	return g
 }
@@ -245,7 +245,7 @@ func (g *game) drawField(screen *ebiten.Image) {
 		for x := 0; x < g.width; x++ {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(12+x*16), float64(11+33+11+y*16))
-			screen.DrawImage(g.tiles.icons[g.field[x][y]], op)
+			screen.DrawImage(g.sprites.icons[g.field[x][y]], op)
 		}
 	}
 }
@@ -254,7 +254,7 @@ func (g *game) Draw(screen *ebiten.Image) {
 	screen.Clear()
 	screen.Fill(color.RGBA{0xcc, 0xcc, 0xcc, 0xcc})
 	op := &ebiten.DrawImageOptions{}
-	screen.DrawImage(g.tiles.background, op)
+	screen.DrawImage(g.sprites.background, op)
 	g.drawField(screen)
 }
 
