@@ -7,6 +7,7 @@ import (
 	"image/color"
 	"image/png"
 	"log"
+	"math"
 	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -96,13 +97,16 @@ type sprites struct {
 }
 
 type game struct {
-	scale   int
-	width   int
-	height  int
-	bombs   int
-	holding int
-	sprites sprites
-	tiles   [][]int
+	scale         int
+	width         int
+	height        int
+	bombs         int
+	holding       int
+	sprites       sprites
+	tiles         [][]int
+	bombsLeft     int
+	buttonState   int
+	secondsPassed int
 }
 
 type transform struct {
@@ -230,6 +234,7 @@ func (g *game) init() *game {
 	}
 	g.loadBackgroundTile(spritesImage)
 	g.initTiles()
+	g.bombsLeft = g.bombs
 	return g
 }
 
@@ -257,8 +262,37 @@ func (g *game) drawTiles(screen *ebiten.Image) {
 	}
 }
 
+func (g *game) drawBombsLeft(screen *ebiten.Image) {
+	for i := 0; i < 3; i++ {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(12+4+2+i*(11+2)), float64(11+4+2))
+		digit := (g.bombsLeft / int(math.Pow(10, float64(2-i)))) % 10
+		screen.DrawImage(g.sprites.digits[digit], op)
+	}
+}
+
+func (g *game) drawButton(screen *ebiten.Image) {
+	op := &ebiten.DrawImageOptions{}
+	width, _ := g.getSize()
+	op.GeoM.Translate(float64(width/2-13), float64(11+4))
+	screen.DrawImage(g.sprites.buttons[g.buttonState], op)
+}
+
+func (g *game) drawSecondsPassed(screen *ebiten.Image) {
+	for i := 0; i < 3; i++ {
+		op := &ebiten.DrawImageOptions{}
+		width, _ := g.getSize()
+		op.GeoM.Translate(float64(width-(12+4+(3-i)*(11+2))), float64(11+4+2))
+		digit := (g.secondsPassed / int(math.Pow(10, float64(2-i)))) % 10
+		screen.DrawImage(g.sprites.digits[digit], op)
+	}
+}
+
 func (g *game) Draw(screen *ebiten.Image) {
 	g.drawBackground(screen)
+	g.drawBombsLeft(screen)
+	g.drawButton(screen)
+	g.drawSecondsPassed(screen)
 	g.drawTiles(screen)
 }
 
