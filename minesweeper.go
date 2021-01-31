@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	"strings"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -98,17 +99,17 @@ type sprites struct {
 }
 
 type game struct {
-	scale         int
-	width         int
-	height        int
-	bombs         int
-	holding       int
-	sprites       sprites
-	tiles         [][]int
-	bombsLeft     int
-	buttonState   int
-	secondsPassed int
-	hitAreas      map[string]image.Rectangle
+	scale       int
+	width       int
+	height      int
+	bombs       int
+	holding     int
+	sprites     sprites
+	tiles       [][]int
+	bombsLeft   int
+	buttonState int
+	hitAreas    map[string]image.Rectangle
+	startTime   time.Time
 }
 
 type transform struct {
@@ -224,6 +225,7 @@ func (g *game) init() *game {
 	g.buttonState = buttonPlaying
 	g.bombsLeft = g.bombs
 	g.hitAreas = make(map[string]image.Rectangle)
+	g.startTime = time.Now()
 	return g
 }
 
@@ -274,7 +276,8 @@ func (g *game) drawSecondsPassed(screen *ebiten.Image) {
 		op := &ebiten.DrawImageOptions{}
 		width, _ := g.getSize()
 		op.GeoM.Translate(float64(width-(12+4+(3-i)*(11+2))), float64(11+4+2))
-		digit := (g.secondsPassed / int(math.Pow(10, float64(2-i)))) % 10
+		secondsPassed := int((time.Now().UnixNano() - g.startTime.UnixNano()) / 1000000000)
+		digit := (secondsPassed / int(math.Pow(10, float64(2-i)))) % 10
 		screen.DrawImage(g.sprites.digits[digit], op)
 	}
 }
