@@ -108,6 +108,7 @@ type game struct {
 	tiles       [][]int
 	bombsLeft   int
 	buttonState int
+	tilePressed *image.Point
 	hitAreas    map[string]image.Rectangle
 	startTime   time.Time
 }
@@ -132,14 +133,6 @@ func loadImageFromString(b64 string) (*ebiten.Image, error) {
 	return img2, err
 }
 
-func (g *game) onPressButton() {
-	g.buttonState = buttonPressed
-}
-
-func (g *game) onReleaseButton() {
-	g.init()
-}
-
 func (g *game) getHitArea() string {
 	x, y := ebiten.CursorPosition()
 	cursor := image.Point{x, y}
@@ -151,17 +144,75 @@ func (g *game) getHitArea() string {
 	return ""
 }
 
+func (g *game) getTileCoords() *image.Point {
+	x, y := ebiten.CursorPosition()
+	cursor := image.Point{x, y}
+	rect := g.hitAreas["tiles"]
+	if !cursor.In(rect) {
+		return nil
+	}
+	cx := (x - rect.Min.X) / 16
+	cy := (y - rect.Min.Y) / 16
+	return &image.Point{cx, cy}
+}
+
+func (g *game) clickButton() {
+	g.init()
+}
+
+func (g *game) leftClickTile(x, y int) {
+	log.Println("left-click")
+}
+
+func (g *game) rightClickTile(x, y int) {
+	log.Println("right-click")
+}
+
 func (g *game) Update() error {
+	area := g.getHitArea()
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		switch g.getHitArea() {
+		switch area {
 		case "button":
-			g.onPressButton()
+			g.buttonState = buttonPressed
+		case "tiles":
+			g.tilePressed = g.getTileCoords()
+			g.buttonState = buttonEvaluate
 		}
 	}
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-		switch g.getHitArea() {
+		switch area {
 		case "button":
-			g.onReleaseButton()
+			g.buttonState = buttonPlaying
+			g.clickButton()
+		case "tiles":
+			if g.tilePressed != nil {
+				coords := g.getTileCoords()
+				g.tilePressed = nil
+				g.buttonState = buttonPlaying
+				g.leftClickTile(coords.X, coords.Y)
+			}
+		}
+	}
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonRight) {
+		switch area {
+		case "tiles":
+			coords := g.getTileCoords()
+			g.tilePressed = nil
+			g.buttonState = buttonPlaying
+			g.rightClickTile(coords.X, coords.Y)
+		}
+	}
+	if g.buttonState == buttonPressed {
+		if area != "button" {
+			g.buttonState = buttonPlaying
+		}
+	}
+	if g.tilePressed != nil {
+		if area == "tiles" {
+			g.tilePressed = g.getTileCoords()
+		} else {
+			g.tilePressed = nil
+			g.buttonState = buttonPlaying
 		}
 	}
 	return nil
@@ -249,7 +300,11 @@ func (g *game) drawTiles(screen *ebiten.Image) {
 		for x := 0; x < g.width; x++ {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(12+x*16), float64(11+33+11+y*16))
-			screen.DrawImage(g.sprites.icons[g.tiles[x][y]], op)
+			icon := g.tiles[x][y]
+			if g.tilePressed != nil && g.tilePressed.X == x && g.tilePressed.Y == y {
+				icon = iconOpened
+			}
+			screen.DrawImage(g.sprites.icons[icon], op)
 		}
 	}
 }
