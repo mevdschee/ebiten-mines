@@ -167,6 +167,10 @@ func (g *game) clickButton() {
 	g.init()
 }
 
+func (g *game) gameOver(x, y int) {
+
+}
+
 func (g *game) leftClickTile(x, y int) {
 	log.Println("left-click")
 	icon := g.tiles[x][y]
@@ -174,6 +178,7 @@ func (g *game) leftClickTile(x, y int) {
 	case iconClosed:
 		if g.bombs[x][y] {
 			icon = iconAnswerIsBomb
+
 		} else {
 			icon = iconOpened
 		}
@@ -432,7 +437,7 @@ func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 	ebiten.SetWindowTitle("Minesweeper.go")
 	g := &game{c: config{
-		scale:   3,
+		scale:   5,
 		width:   9,
 		height:  9,
 		bombs:   10,
