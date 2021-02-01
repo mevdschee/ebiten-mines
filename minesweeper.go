@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"log"
 	"math"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -98,14 +99,19 @@ type sprites struct {
 	background *ebiten.Image
 }
 
+type config struct {
+	scale   int
+	width   int
+	height  int
+	bombs   int
+	holding int
+}
+
 type game struct {
-	scale       int
-	width       int
-	height      int
-	bombs       int
-	holding     int
+	c           config
 	sprites     sprites
 	tiles       [][]int
+	bombs       [][]bool
 	bombsLeft   int
 	buttonState int
 	tilePressed *image.Point
@@ -162,10 +168,28 @@ func (g *game) clickButton() {
 
 func (g *game) leftClickTile(x, y int) {
 	log.Println("left-click")
+	icon := g.tiles[x][y]
+	switch icon {
+	case iconClosed:
+		if g.bombs[x][y] {
+			icon = iconAnswerIsBomb
+		} else {
+			icon = iconOpened
+		}
+	}
+	g.tiles[x][y] = icon
 }
 
 func (g *game) rightClickTile(x, y int) {
 	log.Println("right-click")
+	icon := g.tiles[x][y]
+	switch icon {
+	case iconClosed:
+		icon = iconMarked
+	case iconMarked:
+		icon = iconClosed
+	}
+	g.tiles[x][y] = icon
 }
 
 func (g *game) Update() error {
@@ -219,8 +243,7 @@ func (g *game) Update() error {
 }
 
 func (g *game) loadBackgroundTile(spritesImage *ebiten.Image) {
-	w := g.width
-	h := g.height
+	w, h := g.c.width, g.c.height
 	width, height := g.getSize()
 	background := ebiten.NewImage(width, height)
 	transforms := []transform{
@@ -274,16 +297,26 @@ func (g *game) init() *game {
 	g.loadBackgroundTile(spritesImage)
 	g.initTiles()
 	g.buttonState = buttonPlaying
-	g.bombsLeft = g.bombs
+	g.bombsLeft = g.c.bombs
 	g.hitAreas = make(map[string]image.Rectangle)
 	g.startTime = time.Now()
 	return g
 }
 
 func (g *game) initTiles() {
-	g.tiles = make([][]int, g.width)
+	g.tiles = make([][]int, g.c.width)
+	g.bombs = make([][]bool, g.c.width)
 	for x := range g.tiles {
-		g.tiles[x] = make([]int, g.height)
+		g.tiles[x] = make([]int, g.c.height)
+		g.bombs[x] = make([]bool, g.c.height)
+	}
+	b := g.c.bombs
+	for b > 0 {
+		x, y := rand.Intn(g.c.width), rand.Intn(g.c.height)
+		if !g.bombs[x][y] {
+			g.bombs[x][y] = true
+			b--
+		}
 	}
 }
 
@@ -294,17 +327,38 @@ func (g *game) drawBackground(screen *ebiten.Image) {
 	screen.DrawImage(g.sprites.background, op)
 }
 
+func (g *game) calucateBombs(x, y int) int {
+	bombs := 0
+	for dx := -1; dx <= 1; dx++ {
+		for dy := -1; dy <= 1; dy++ {
+			if x+dx >= 0 && x+dx < g.c.width {
+				if y+dy >= 0 && y+dy < g.c.height {
+					if g.bombs[x+dx][y+dy] {
+						bombs++
+					}
+				}
+			}
+		}
+	}
+	return bombs
+}
+
 func (g *game) drawTiles(screen *ebiten.Image) {
-	g.hitAreas["tiles"] = image.Rect(12, 11+33+11, 12+g.width*16, 11+33+11+g.height*16)
-	for y := 0; y < g.height; y++ {
-		for x := 0; x < g.width; x++ {
+	w, h := g.c.width, g.c.height
+	g.hitAreas["tiles"] = image.Rect(12, 11+33+11, 12+w*16, 11+33+11+h*16)
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(12+x*16), float64(11+33+11+y*16))
 			icon := g.tiles[x][y]
-			if g.tilePressed != nil && g.tilePressed.X == x && g.tilePressed.Y == y {
-				icon = iconOpened
+			if icon == iconOpened {
+				screen.DrawImage(g.sprites.numbers[g.calucateBombs(x, y)], op)
+			} else {
+				if g.tilePressed != nil && g.tilePressed.X == x && g.tilePressed.Y == y {
+					icon = iconOpened
+				}
+				screen.DrawImage(g.sprites.icons[icon], op)
 			}
-			screen.DrawImage(g.sprites.icons[icon], op)
 		}
 	}
 }
@@ -346,7 +400,7 @@ func (g *game) Draw(screen *ebiten.Image) {
 }
 
 func (g *game) getSize() (int, int) {
-	return g.width*16 + 12*2, g.height*16 + 11*3 + 33
+	return g.c.width*16 + 12*2, g.c.height*16 + 11*3 + 33
 }
 
 func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -355,16 +409,16 @@ func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func main() {
 	ebiten.SetWindowTitle("Minesweeper.go")
-	game := &game{
+	g := &game{c: config{
 		scale:   3,
 		width:   9,
 		height:  9,
 		bombs:   10,
 		holding: 15,
-	}
-	width, height := game.getSize()
-	ebiten.SetWindowSize(game.scale*width, game.scale*height)
-	if err := ebiten.RunGame(game.init()); err != nil {
+	}}
+	width, height := g.getSize()
+	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
+	if err := ebiten.RunGame(g.init()); err != nil {
 		log.Fatalf("%v\n", err)
 	}
 }
