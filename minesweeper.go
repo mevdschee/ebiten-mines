@@ -112,6 +112,7 @@ type game struct {
 	sprites     sprites
 	tiles       [][]int
 	bombs       [][]bool
+	numbers     [][]int
 	bombsLeft   int
 	buttonState int
 	tilePressed *image.Point
@@ -296,6 +297,8 @@ func (g *game) init() *game {
 	}
 	g.loadBackgroundTile(spritesImage)
 	g.initTiles()
+	g.initBombs()
+	g.initNumbers()
 	g.buttonState = buttonPlaying
 	g.bombsLeft = g.c.bombs
 	g.hitAreas = make(map[string]image.Rectangle)
@@ -305,9 +308,14 @@ func (g *game) init() *game {
 
 func (g *game) initTiles() {
 	g.tiles = make([][]int, g.c.width)
-	g.bombs = make([][]bool, g.c.width)
 	for x := range g.tiles {
 		g.tiles[x] = make([]int, g.c.height)
+	}
+}
+
+func (g *game) initBombs() {
+	g.bombs = make([][]bool, g.c.width)
+	for x := range g.tiles {
 		g.bombs[x] = make([]bool, g.c.height)
 	}
 	b := g.c.bombs
@@ -316,6 +324,19 @@ func (g *game) initTiles() {
 		if !g.bombs[x][y] {
 			g.bombs[x][y] = true
 			b--
+		}
+	}
+}
+
+func (g *game) initNumbers() {
+	g.numbers = make([][]int, g.c.width)
+	for x := range g.tiles {
+		g.numbers[x] = make([]int, g.c.height)
+	}
+	w, h := g.c.width, g.c.height
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			g.numbers[x][y] = g.calucateBombs(x, y)
 		}
 	}
 }
@@ -352,7 +373,8 @@ func (g *game) drawTiles(screen *ebiten.Image) {
 			op.GeoM.Translate(float64(12+x*16), float64(11+33+11+y*16))
 			icon := g.tiles[x][y]
 			if icon == iconOpened {
-				screen.DrawImage(g.sprites.numbers[g.calucateBombs(x, y)], op)
+				number := g.numbers[x][y]
+				screen.DrawImage(g.sprites.numbers[number], op)
 			} else {
 				if g.tilePressed != nil && g.tilePressed.X == x && g.tilePressed.Y == y {
 					icon = iconOpened
@@ -417,6 +439,7 @@ func main() {
 		holding: 15,
 	}}
 	width, height := g.getSize()
+	ebiten.SetMaxTPS(6)
 	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
 	if err := ebiten.RunGame(g.init()); err != nil {
 		log.Fatalf("%v\n", err)
