@@ -1,6 +1,6 @@
 package main
 
-import (
+/*import (
 	"bytes"
 	"encoding/base64"
 	"image"
@@ -450,3 +450,4 @@ func main() {
 		log.Fatalf("%v\n", err)
 	}
 }
+*/
