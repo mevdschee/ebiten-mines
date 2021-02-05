@@ -3,8 +3,7 @@ package sprites
 import (
 	"bytes"
 	"encoding/base64"
-	"errors"
-	"image"
+	"encoding/json"
 	"image/png"
 	"strings"
 
@@ -13,17 +12,17 @@ import (
 
 // SpriteMap is a set of sprites
 type SpriteMap struct {
-	image  *ebiten.Image
-	single map[string]*SingleSprite `json:"single"`
-	series map[string]*SeriesSprite `json:"series"`
-	sliced map[string]*SlicedSprite `json:"sliced"`
+	Single map[string]*SingleSprite `json:"single"`
+	Series map[string]*SeriesSprite `json:"series"`
+	Sliced map[string]*SlicedSprite `json:"sliced"`
 }
 
 // Sprite is the base struct for any sprite
 type Sprite struct {
-	Name string `json:"name"`
-	X    int    `json:"x"`
-	Y    int    `json:"y"`
+	Image *ebiten.Image
+	Name  string `json:"name"`
+	X     int    `json:"x"`
+	Y     int    `json:"y"`
 }
 
 // SingleSprite is a single rectangular frames
@@ -64,46 +63,29 @@ func loadImageFromString(b64 string) (*ebiten.Image, error) {
 	return img2, err
 }
 
-func loadJSONFromString(loadJSONFromString string) (*interface{}, error) {
-	/*data := &interface{}
-		err := json.Unmarshal([]byte(data), &data)
-	    if err != nil {
-	        log.Fatal("Unmarshal failed", err)
-	    }
-	    fmt.Println("Done", a)*/
-}
-
 // NewSpriteMap creates a new sprite map
-func NewSpriteMap(base64image, jsondata string) *SpriteMap {
-	return &SpriteMap{
-		image:   spriteMap,
-		sprites: map[string]*Sprite{},
+func NewSpriteMap(base64image, jsondata string) (*SpriteMap, error) {
+	image, err := loadImageFromString(base64image)
+	if err != nil {
+		return nil, err
 	}
-}
-
-// AddSprite adds a series of rectangular sprites
-func (s *SpriteMap) AddSprite(name string, x, y, width, height, gap, count int) error {
-	if _, exists := s.sprites[name]; exists {
-		return errors.New("duplicate sprite name")
+	data := SpriteMap{
+		Single: map[string]*SingleSprite{},
+		Series: map[string]*SeriesSprite{},
+		Sliced: map[string]*SlicedSprite{},
 	}
-	s.sprites[name] = &Sprite{
-		initialFrame: image.Rect(x, y, x+width, y+height),
-		gap:          gap,
-		count:        count,
+	err = json.Unmarshal([]byte(jsondata), &data)
+	if err != nil {
+		return nil, err
 	}
-	return nil
-}
-
-// AddSlicedSprite adds a 9 sliced sprite
-func (s *SpriteMap) AddSlicedSprite(name string, w0, w1, w2, h0, h1, h2, horizontalGap, verticalGap int) error {
-	if _, exists := s.sprites[name]; exists {
-		return errors.New("duplicate sprite name")
+	for _, sprite := range data.Single {
+		sprite.Image = image
 	}
-	s.slices[name] = &SlicedSprite{
-		widths:        [3]int{w0, w1, w2},
-		heights:       [3]int{h0, h1, h2},
-		horizontalGap: horizontalGap,
-		verticalGap:   verticalGap,
+	for _, sprite := range data.Series {
+		sprite.Image = image
 	}
-	return nil
+	for _, sprite := range data.Sliced {
+		sprite.Image = image
+	}
+	return &data, nil
 }

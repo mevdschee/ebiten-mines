@@ -5,7 +5,16 @@ import "github.com/mevdschee/minesweeper.go/layers"
 // Scene is a set of layers
 type Scene struct {
 	name   string
-	layers []layers.Layer
+	layers map[string]*layers.Layer
+}
+
+var (
+	currentScene *Scene
+	allScenes    map[string]*Scene
+)
+
+func init() {
+	allScenes = map[string]*Scene{}
 }
 
 // GetName gets the name of the scene
@@ -14,7 +23,7 @@ func (s *Scene) GetName() string {
 }
 
 // GetLayers gets the layers of the scene
-func (s *Scene) GetLayers() []layers.Layer {
+func (s *Scene) GetLayers() map[string]*layers.Layer {
 	return s.layers
 }
 
@@ -22,6 +31,11 @@ func (s *Scene) GetLayers() []layers.Layer {
 func New(name string) *Scene {
 	return &Scene{
 		name:   name,
-		layers: []layers.Layer{},
+		layers: map[string]*layers.Layer{},
 	}
+}
+
+// Add adds a layers to the scene
+func (s *Scene) Add(layer *layers.Layer) {
+	s.layers[layer.GetName()] = layer
 }

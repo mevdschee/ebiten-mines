@@ -1,7 +1,9 @@
 package main
 
 import (
-	"github.com/hajimehoshi/ebiten/v2"
+	"log"
+
+	"github.com/hajimehoshi/ebiten"
 	"github.com/mevdschee/minesweeper.go/clips"
 	"github.com/mevdschee/minesweeper.go/layers"
 	"github.com/mevdschee/minesweeper.go/movies"
@@ -9,7 +11,7 @@ import (
 	"github.com/mevdschee/minesweeper.go/sprites"
 )
 
-var skin = `
+var spriteMapImage = `
 	iVBORw0KGgoAAAANSUhEUgAAAJAAAAB6CAMAAABnRypuAAADAFBMVEUAAACA
 	AAAAgACAgAAAAICAAIAAgIDAwMCAgID/AAAA/wD//wAAAP//AP8A//////8Q
 	EBARERESEhITExMUFBQVFRUWFhYXFxcYGBgZGRkaGhobGxscHBwdHR0eHh4f
@@ -58,7 +60,7 @@ var skin = `
 	D80XiNDW8aMtkHL8aAwUZ+ob6Aa6geoAhZe1I/+LmkZA5OXxJYDoy+wrAP0D
 	7BQA5IVg6IYAAAAASUVORK5CYII=`
 
-var meta = `
+var spriteMapMeta = `
 {
 	"single": [
 		{
@@ -127,17 +129,55 @@ var meta = `
 	]
 }`
 
-func main() {
-	sprites := sprites.NewSpriteMap(skin, meta)
-	movie := movies.New()
-	game := scenes.New()
-	scenes.Register("game", game)
-	movie.Add(gameScene)
-	backgroundLayer = layers.New()
-	gameScene.Add(backgroundLayer)
-	controlsClip = clips.New()
-	backgroundLayer.Add(controlsClip)
-	frame := ebiten.NewImage(width, height)
-	controlsClip.Add(frame)
+type config struct {
+	scale   int
+	width   int
+	height  int
+	bombs   int
+	holding int
+}
 
+type game struct {
+	c     config
+	movie *movies.Movie
+}
+
+func (g *game) getSize() (int, int) {
+	return g.c.width*16 + 12*2, g.c.height*16 + 11*3 + 33
+}
+
+func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+	return g.getSize()
+}
+
+func (g *game) init() *game {
+	spriteMap, err := sprites.NewSpriteMap(spriteMapImage, spriteMapMeta)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	g.movie = movies.New()
+	gameScene := scenes.New("game")
+	backgroundLayer := layers.New("bg")
+	controlsClip := clips.NewSlice(spriteMap.Sliced["controls"], 0, 0, 100, 40)
+	g.movie.Add(gameScene)
+	gameScene.Add(backgroundLayer)
+	backgroundLayer.Add(controlsClip)
+	return g
+}
+
+func main() {
+	ebiten.SetWindowTitle("Minesweeper.go")
+	g := &game{c: config{
+		scale:   5,
+		width:   9,
+		height:  9,
+		bombs:   10,
+		holding: 15,
+	}}
+	width, height := g.getSize()
+	ebiten.SetMaxTPS(30)
+	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
+	if err := ebiten.RunGame(g.init()); err != nil {
+		log.Fatalf("%v\n", err)
+	}
 }

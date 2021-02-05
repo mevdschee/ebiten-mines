@@ -17,3 +17,8 @@ func New() *Movie {
 		scenes:       map[string]*scenes.Scene{},
 	}
 }
+
+// Add adds a scene to the movie
+func (m *Movie) Add(scene *scenes.Scene) {
+	m.scenes[scene.GetName()] = scene
+}
