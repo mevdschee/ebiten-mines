@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mevdschee/minesweeper.go/clips"
 	"github.com/mevdschee/minesweeper.go/layers"
 	"github.com/mevdschee/minesweeper.go/movies"
@@ -62,18 +62,16 @@ var spriteMapImage = `
 
 var spriteMapMeta = `
 {
-	"single": [
-		{
-			"name": "display",
+	"single": {
+		"display": {
 			"x": 28,
 			"y": 82,
 			"width": 41,
 			"height": 25
 		}
-	],
-	"series": [
-		{
-			"name": "numbers",
+	},
+	"series": {
+		"numbers": {
 			"x": 0,
 			"y": 0,
 			"width": 16,
@@ -81,8 +79,7 @@ var spriteMapMeta = `
 			"count": 9,
 			"gap": 0
 		},
-		{
-			"name": "icons",
+		"icons": {
 			"x": 0,
 			"y": 16,
 			"width": 16,
@@ -90,8 +87,7 @@ var spriteMapMeta = `
 			"count": 8,
 			"gap": 0
 		},
-		{
-			"name": "digits",
+		"digits": {
 			"x": 0,
 			"y": 33,
 			"width": 11,
@@ -99,8 +95,7 @@ var spriteMapMeta = `
 			"count": 11,
 			"gap": 1
 		},
-		{
-			"name": "buttons",
+		"buttons": {
 			"x": 0,
 			"y": 55,
 			"width": 26,
@@ -108,25 +103,23 @@ var spriteMapMeta = `
 			"count": 5,
 			"gap": 1
 		}
-	],
-	"sliced": [
-		{
-			"name": "controls",
+	},
+	"sliced": {
+		"controls": {
 			"x": 0,
 			"y": 82,
 			"widths": [12,1,12],
 			"heights": [11,1,11],
 			"gap": 1
 		},
-		{
-			"name": "field",
+		"field": {
 			"x": 0,
 			"y": 96,
 			"widths": [12,1,12],
 			"heights": [11,1,11],
 			"gap": 1
 		}
-	]
+	}
 }`
 
 type config struct {
@@ -151,6 +144,7 @@ func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func (g *game) init() *game {
+	w, h := g.getSize()
 	spriteMap, err := sprites.NewSpriteMap(spriteMapImage, spriteMapMeta)
 	if err != nil {
 		log.Fatalln(err)
@@ -158,11 +152,17 @@ func (g *game) init() *game {
 	g.movie = movies.New()
 	gameScene := scenes.New("game")
 	backgroundLayer := layers.New("bg")
-	controlsClip := clips.NewSlice(spriteMap.Sliced["controls"], 0, 0, 100, 40)
+	controlsClip := clips.NewSlice(spriteMap, "controls", 0, 0, w, 55)
+	fieldClip := clips.NewSlice(spriteMap, "field", 0, 44, w, h-44)
 	g.movie.Add(gameScene)
 	gameScene.Add(backgroundLayer)
 	backgroundLayer.Add(controlsClip)
+	backgroundLayer.Add(fieldClip)
 	return g
+}
+
+func (g *game) Update() error {
+	return g.movie.Update()
 }
 
 func (g *game) Draw(screen *ebiten.Image) {
@@ -172,7 +172,7 @@ func (g *game) Draw(screen *ebiten.Image) {
 func main() {
 	ebiten.SetWindowTitle("Minesweeper.go")
 	g := &game{c: config{
-		scale:   5,
+		scale:   3,
 		width:   9,
 		height:  9,
 		bombs:   10,
