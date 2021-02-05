@@ -165,6 +165,10 @@ func (g *game) init() *game {
 	return g
 }
 
+func (g *game) Draw(screen *ebiten.Image) {
+	g.movie.Draw(screen)
+}
+
 func main() {
 	ebiten.SetWindowTitle("Minesweeper.go")
 	g := &game{c: config{

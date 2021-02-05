@@ -1,6 +1,9 @@
 package scenes
 
-import "github.com/mevdschee/minesweeper.go/layers"
+import (
+	"github.com/hajimehoshi/ebiten"
+	"github.com/mevdschee/minesweeper.go/layers"
+)
 
 // Scene is a set of layers
 type Scene struct {
@@ -38,4 +41,9 @@ func New(name string) *Scene {
 // Add adds a layers to the scene
 func (s *Scene) Add(layer *layers.Layer) {
 	s.layers[layer.GetName()] = layer
+}
+
+// Draw draws the scene
+func (s *Scene) Draw(screen *ebiten.Image) {
+
 }
