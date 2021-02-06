@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -37,67 +38,13 @@ var spriteMapImage = `
 	m/Km5Yj2eotMAM0b0epxekTtMjIR5MrIVJDN7FfQHwLik+5B/h6aApID/QygcibQv7SdAex29G+U
 	AAAAAElFTkSuQmCC`
 
-var spriteMapMeta = `
-	[
-		{
-			"name": "display",
-			"x": 28,
-			"y": 82,
-			"width": 41,
-			"height": 25,
-			"count": 1
-		},
-		{
-			"name": "numbers",
-			"x": 0,
-			"y": 0,
-			"width": 16,
-			"height": 16,
-			"count": 9
-		},
-		{
-			"name": "icons",
-			"x": 0,
-			"y": 16,
-			"width": 16,
-			"height": 16,
-			"count": 8
-		},
-		{
-			"name": "digits",
-			"x": 0,
-			"y": 33,
-			"width": 11,
-			"height": 21,
-			"count": 11,
-			"gap": 1
-		},
-		{
-			"name": "buttons",
-			"x": 0,
-			"y": 55,
-			"width": 26,
-			"height": 26,
-			"count": 5,
-			"gap": 1
-		},
-		{
-			"name": "controls",
-			"x": 0,
-			"y": 82,
-			"widths": [12,1,12],
-			"heights": [11,1,11],
-			"gap": 1
-		},
-		{
-			"name": "field",
-			"x": 0,
-			"y": 96,
-			"widths": [12,1,12],
-			"heights": [11,1,11],
-			"gap": 1
-		}
-	]`
+const spriteMapMeta = `
+	[{"name":"display","x":28,"y":82,"width":41,"height":25,"count":1},
+	{"name":"icons","x":0,"y":0,"width":16,"height":16,"count":17,"grid":9},
+	{"name":"digits","x":0,"y":33,"width":11,"height":21,"count":11,"gap":1},
+	{"name":"buttons","x":0,"y":55,"width":26,"height":26,"count":5,"gap":1},
+	{"name":"controls","x":0,"y":82,"widths":[12,1,12],"heights":[11,1,11],"gap":1},
+	{"name":"field","x":0,"y":96,"widths":[12,1,12],"heights":[11,1,11],"gap":1}]`
 
 type config struct {
 	scale   int
@@ -108,9 +55,33 @@ type config struct {
 }
 
 type game struct {
-	c     config
-	movie *movies.Movie
+	c      config
+	movie  *movies.Movie
+	bombs  [3]*clips.Clip
+	time   [3]*clips.Clip
+	button *clips.Clip
+	tiles  [][]*clips.Clip
 }
+
+const (
+	iconEmpty = iota
+	iconNumberOne
+	iconNumberTwo
+	iconNumberThree
+	iconNumberFour
+	iconNumberFive
+	iconNumberSix
+	iconNumberSeven
+	iconNumberEight
+	iconClosed
+	iconOpened
+	iconBomb
+	iconMarked
+	iconAnswerNoBomb
+	iconAnswerIsBomb
+	iconQuestionMark
+	iconQuestionPressed
+)
 
 func (g *game) getSize() (int, int) {
 	return g.c.width*16 + 12*2, g.c.height*16 + 11*3 + 33
@@ -131,14 +102,45 @@ func (g *game) init() *game {
 	bg := layers.New("bg")
 	g.movie.Add(game)
 	game.Add(bg)
-	bg.Add(clips.NewScaled(spriteMap, "controls", 0, 0, w, 55))
-	bg.Add(clips.NewScaled(spriteMap, "field", 0, 44, w, h-44))
-	bg.Add(clips.New(spriteMap, "display", 16, 15))
-	//bg.Add(clips.New(spriteMap, "display", w*16-33, 15))
+	bg.Add(clips.NewScaled(spriteMap["controls"], "controls", 0, 0, w, 55))
+	bg.Add(clips.NewScaled(spriteMap["field"], "field", 0, 44, w, h-44))
+	bg.Add(clips.New(spriteMap["display"], "bombs", 16, 15))
+	bg.Add(clips.New(spriteMap["display"], "time", w-57, 15))
+	fg := layers.New("fg")
+	game.Add(fg)
+	g.bombs = [3]*clips.Clip{}
+	for i := 0; i < 3; i++ {
+		clip := clips.New(spriteMap["digits"], fmt.Sprintf("bombs-digit-%d", i), 16+2+i*13, 15+2)
+		g.bombs[i] = clip
+		fg.Add(clip)
+	}
+	g.time = [3]*clips.Clip{}
+	for i := 0; i < 3; i++ {
+		clip := clips.New(spriteMap["digits"], fmt.Sprintf("time-digit-%d", i), w-57+2+i*13, 15+2)
+		g.time[i] = clip
+		fg.Add(clip)
+	}
+	clip := clips.New(spriteMap["buttons"], "button", w/2-13, 15)
+	g.button = clip
+	fg.Add(clip)
+	g.tiles = make([][]*clips.Clip, g.c.height)
+	for y := 0; y < g.c.height; y++ {
+		g.tiles[y] = make([]*clips.Clip, g.c.width)
+		for x := 0; x < g.c.width; x++ {
+			clip := clips.New(spriteMap["icons"], fmt.Sprintf("icon-%d-%d", x, y), 12+x*16, 55+y*16)
+			clip.Goto(iconClosed)
+			g.tiles[y][x] = clip
+			fg.Add(clip)
+		}
+	}
 	return g
 }
 
 func (g *game) Update() error {
+	if g.movie == nil {
+		g.init()
+	}
+
 	return g.movie.Update()
 }
 
@@ -158,7 +160,7 @@ func main() {
 	width, height := g.getSize()
 	ebiten.SetMaxTPS(30)
 	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
-	if err := ebiten.RunGame(g.init()); err != nil {
+	if err := ebiten.RunGame(g); err != nil {
 		log.Fatalf("%v\n", err)
 	}
 }

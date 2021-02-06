@@ -22,28 +22,39 @@ func (c *Clip) GetName() string {
 }
 
 // New creates a new sprite based clip
-func New(spriteMap *sprites.SpriteMap, name string, x, y int) *Clip {
-	sprite := spriteMap.Sprites[name]
-	srcX, srcY := sprite.X, sprite.Y
-	width, height := sprite.Width, sprite.Height
-	frame0 := spriteMap.Image.SubImage(image.Rect(srcX, srcY, srcX+width, srcY+height)).(*ebiten.Image)
+func New(sprite *sprites.Sprite, name string, x, y int) *Clip {
+	frames := []*ebiten.Image{}
+
+	srcWidth, srcHeight := sprite.Width, sprite.Height
+	for i := 0; i < sprite.Count; i++ {
+		grid := sprite.Grid
+		if grid == 0 {
+			grid = sprite.Count
+		}
+		srcX := sprite.X + (i%grid)*(srcWidth+sprite.Gap)
+		srcY := sprite.Y + (i/grid)*(srcHeight+sprite.Gap)
+		r := image.Rect(srcX, srcY, srcX+srcWidth, srcY+srcHeight)
+		frame := sprite.Image.SubImage(r).(*ebiten.Image)
+		frames = append(frames, frame)
+	}
+
 	return &Clip{
 		name:   name,
 		x:      x,
 		y:      y,
-		width:  width,
-		height: height,
+		width:  srcWidth,
+		height: srcHeight,
 		frame:  0,
-		frames: []*ebiten.Image{frame0},
+		frames: frames,
 	}
 }
 
 // NewScaled creates a new 9 slice scaled sprite based clip
-func NewScaled(spriteMap *sprites.SpriteMap, name string, x, y, width, height int) *Clip {
-	sprite := spriteMap.Sprites[name]
+func NewScaled(sprite *sprites.Sprite, name string, x, y, width, height int) *Clip {
+	frame0 := ebiten.NewImage(width, height)
+
 	srcY := sprite.Y
 	dstY := 0
-	frame0 := ebiten.NewImage(width, height)
 	for h := 0; h < 3; h++ {
 		srcHeight := sprite.Heights[h]
 		dstHeight := sprite.Heights[h]
@@ -59,7 +70,8 @@ func NewScaled(spriteMap *sprites.SpriteMap, name string, x, y, width, height in
 				dstWidth = width - sprite.Widths[0] - sprite.Widths[2]
 			}
 
-			img := spriteMap.Image.SubImage(image.Rect(srcX, srcY, srcX+srcWidth, srcY+srcHeight)).(*ebiten.Image)
+			r := image.Rect(srcX, srcY, srcX+srcWidth, srcY+srcHeight)
+			img := sprite.Image.SubImage(r).(*ebiten.Image)
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Scale(float64(dstWidth)/float64(srcWidth), float64(dstHeight)/float64(srcHeight))
 			op.GeoM.Translate(float64(dstX), float64(dstY))
@@ -83,7 +95,7 @@ func NewScaled(spriteMap *sprites.SpriteMap, name string, x, y, width, height in
 	}
 }
 
-// Draw draws the layer
+// Draw draws the clip
 func (c *Clip) Draw(screen *ebiten.Image) {
 	img := c.frames[c.frame]
 	srcWidth, srcHeight := img.Size()
@@ -93,10 +105,16 @@ func (c *Clip) Draw(screen *ebiten.Image) {
 	screen.DrawImage(img, op)
 }
 
+// Goto goes to a frame of the clip
+func (c *Clip) Goto(frame int) {
+	c.frame = frame
+}
+
 // Update updates the clip
 func (c *Clip) Update() (err error) {
-	//if playing do:
-	//c.frame = (c.frame + 1) % len(c.frames)
+	//if c.fps > 0 && c.ticks%(60/c.fps) == 0 {
+	//	c.frame = (c.frame + 1) % len(c.frames)
+	//}
 	//if moving do:
 	//c.x++
 	//if resizing do:
