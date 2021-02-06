@@ -21,10 +21,29 @@ func (c *Clip) GetName() string {
 	return c.name
 }
 
+// NewSingle creates a new single sprite based clip
+func NewSingle(spriteMap *sprites.SpriteMap, name string, x, y int) *Clip {
+	sprite := spriteMap.Single[name]
+	srcX, srcY := sprite.X, sprite.Y
+	width, height := sprite.Width, sprite.Height
+
+	frame0 := spriteMap.Image.SubImage(image.Rect(srcX, srcY, srcX+width, srcY+height)).(*ebiten.Image)
+
+	return &Clip{
+		name:   name,
+		x:      x,
+		y:      y,
+		width:  width,
+		height: height,
+		frame:  0,
+		frames: []*ebiten.Image{frame0},
+	}
+}
+
 // NewSlice creates a new slice sprite based clip
 func NewSlice(spriteMap *sprites.SpriteMap, name string, x, y, width, height int) *Clip {
-	frame0 := ebiten.NewImage(width, height)
 	sprite := spriteMap.Sliced[name]
+	frame0 := ebiten.NewImage(width, height)
 
 	srcY := sprite.Y
 	dstY := 0
@@ -62,6 +81,7 @@ func NewSlice(spriteMap *sprites.SpriteMap, name string, x, y, width, height int
 		y:      y,
 		width:  width,
 		height: height,
+		frame:  0,
 		frames: []*ebiten.Image{frame0},
 	}
 }

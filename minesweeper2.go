@@ -127,14 +127,14 @@ func (g *game) init() *game {
 		log.Fatalln(err)
 	}
 	g.movie = movies.New()
-	gameScene := scenes.New("game")
-	backgroundLayer := layers.New("bg")
-	controlsClip := clips.NewSlice(spriteMap, "controls", 0, 0, w, 55)
-	fieldClip := clips.NewSlice(spriteMap, "field", 0, 44, w, h-44)
-	g.movie.Add(gameScene)
-	gameScene.Add(backgroundLayer)
-	backgroundLayer.Add(controlsClip)
-	backgroundLayer.Add(fieldClip)
+	game := scenes.New("game")
+	bg := layers.New("bg")
+	g.movie.Add(game)
+	game.Add(bg)
+	bg.Add(clips.NewSlice(spriteMap, "controls", 0, 0, w, 55))
+	bg.Add(clips.NewSlice(spriteMap, "field", 0, 44, w, h-44))
+	bg.Add(clips.NewSingle(spriteMap, "display", 16, 15))
+	//bg.Add(clips.NewSingle(spriteMap, "display", w*16-33, 15))
 	return g
 }
 
