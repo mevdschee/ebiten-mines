@@ -12,38 +12,21 @@ import (
 
 // SpriteMap is a set of sprites
 type SpriteMap struct {
-	Image  *ebiten.Image
-	Single map[string]*SingleSprite `json:"single"`
-	Series map[string]*SeriesSprite `json:"series"`
-	Sliced map[string]*SlicedSprite `json:"sliced"`
+	Image   *ebiten.Image
+	Sprites map[string]*Sprite `json:"single"`
 }
 
 // Sprite is the base struct for any sprite
 type Sprite struct {
-	X int `json:"x"`
-	Y int `json:"y"`
-}
-
-// SingleSprite is a single rectangular frames
-type SingleSprite struct {
-	Sprite
-	Width  int `json:"width"`
-	Height int `json:"height"`
-}
-
-// SeriesSprite is a set of rectangular frames
-type SeriesSprite struct {
-	SingleSprite
-	Count int `json:"count"`
-	Gap   int `json:"gap"`
-}
-
-// SlicedSprite is a 9 sliced sprite
-type SlicedSprite struct {
-	Sprite
-	Widths  [3]int `json:"widths"`
-	Heights [3]int `json:"heights"`
-	Gap     int    `json:"gap"`
+	Name    string  `json:"name"`
+	X       int     `json:"x"`
+	Y       int     `json:"y"`
+	Width   *int    `json:"width,omitempty"`
+	Height  *int    `json:"height,omitempty"`
+	Widths  *[3]int `json:"widths,omitempty"`
+	Heights *[3]int `json:"heights,omitempty"`
+	Count   int     `json:"count"`
+	Gap     int     `json:"gap"`
 }
 
 func loadImageFromString(b64 string) (*ebiten.Image, error) {
@@ -68,16 +51,18 @@ func NewSpriteMap(base64image, jsondata string) (*SpriteMap, error) {
 	if err != nil {
 		return nil, err
 	}
-	data := SpriteMap{
-		Image:  nil,
-		Single: map[string]*SingleSprite{},
-		Series: map[string]*SeriesSprite{},
-		Sliced: map[string]*SlicedSprite{},
+	sprites := []*Sprite{}
+	spriteMap := SpriteMap{
+		Image:   nil,
+		Sprites: map[string]*Sprite{},
 	}
-	err = json.Unmarshal([]byte(jsondata), &data)
+	err = json.Unmarshal([]byte(jsondata), &sprites)
 	if err != nil {
 		return nil, err
 	}
-	data.Image = image
-	return &data, nil
+	spriteMap.Image = image
+	for _, sprite := range sprites {
+		spriteMap.Sprites[sprite.Name] = sprite
+	}
+	return &spriteMap, nil
 }

@@ -21,14 +21,12 @@ func (c *Clip) GetName() string {
 	return c.name
 }
 
-// NewSingle creates a new single sprite based clip
-func NewSingle(spriteMap *sprites.SpriteMap, name string, x, y int) *Clip {
-	sprite := spriteMap.Single[name]
+// New creates a new sprite based clip
+func New(spriteMap *sprites.SpriteMap, name string, x, y int) *Clip {
+	sprite := spriteMap.Sprites[name]
 	srcX, srcY := sprite.X, sprite.Y
-	width, height := sprite.Width, sprite.Height
-
+	width, height := *sprite.Width, *sprite.Height
 	frame0 := spriteMap.Image.SubImage(image.Rect(srcX, srcY, srcX+width, srcY+height)).(*ebiten.Image)
-
 	return &Clip{
 		name:   name,
 		x:      x,
@@ -40,13 +38,12 @@ func NewSingle(spriteMap *sprites.SpriteMap, name string, x, y int) *Clip {
 	}
 }
 
-// NewSlice creates a new slice sprite based clip
-func NewSlice(spriteMap *sprites.SpriteMap, name string, x, y, width, height int) *Clip {
-	sprite := spriteMap.Sliced[name]
-	frame0 := ebiten.NewImage(width, height)
-
+// NewScaled creates a new 9 slice scaled sprite based clip
+func NewScaled(spriteMap *sprites.SpriteMap, name string, x, y, width, height int) *Clip {
+	sprite := spriteMap.Sprites[name]
 	srcY := sprite.Y
 	dstY := 0
+	frame0 := ebiten.NewImage(width, height)
 	for h := 0; h < 3; h++ {
 		srcHeight := sprite.Heights[h]
 		dstHeight := sprite.Heights[h]

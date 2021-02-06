@@ -38,66 +38,69 @@ var spriteMapImage = `
 	AAAAAElFTkSuQmCC`
 
 var spriteMapMeta = `
-	{
-		"single": {
-			"display": {
-				"x": 28,
-				"y": 82,
-				"width": 41,
-				"height": 25
-			}
+	[
+		{
+			"name": "display",
+			"x": 28,
+			"y": 82,
+			"width": 41,
+			"height": 25,
+			"count": 1,
+			"gap": 0
 		},
-		"series": {
-			"numbers": {
-				"x": 0,
-				"y": 0,
-				"width": 16,
-				"height": 16,
-				"count": 9,
-				"gap": 0
-			},
-			"icons": {
-				"x": 0,
-				"y": 16,
-				"width": 16,
-				"height": 16,
-				"count": 8,
-				"gap": 0
-			},
-			"digits": {
-				"x": 0,
-				"y": 33,
-				"width": 11,
-				"height": 21,
-				"count": 11,
-				"gap": 1
-			},
-			"buttons": {
-				"x": 0,
-				"y": 55,
-				"width": 26,
-				"height": 26,
-				"count": 5,
-				"gap": 1
-			}
+		{
+			"name": "numbers",
+			"x": 0,
+			"y": 0,
+			"width": 16,
+			"height": 16,
+			"count": 9,
+			"gap": 0
 		},
-		"sliced": {
-			"controls": {
-				"x": 0,
-				"y": 82,
-				"widths": [12,1,12],
-				"heights": [11,1,11],
-				"gap": 1
-			},
-			"field": {
-				"x": 0,
-				"y": 96,
-				"widths": [12,1,12],
-				"heights": [11,1,11],
-				"gap": 1
-			}
+		{
+			"name": "icons",
+			"x": 0,
+			"y": 16,
+			"width": 16,
+			"height": 16,
+			"count": 8,
+			"gap": 0
+		},
+		{
+			"name": "digits",
+			"x": 0,
+			"y": 33,
+			"width": 11,
+			"height": 21,
+			"count": 11,
+			"gap": 1
+		},
+		{
+			"name": "buttons",
+			"x": 0,
+			"y": 55,
+			"width": 26,
+			"height": 26,
+			"count": 5,
+			"gap": 1
+		},
+		{
+			"name": "controls",
+			"x": 0,
+			"y": 82,
+			"widths": [12,1,12],
+			"heights": [11,1,11],
+			"gap": 1
+		},
+		{
+			"name": "field",
+			"x": 0,
+			"y": 96,
+			"widths": [12,1,12],
+			"heights": [11,1,11],
+			"gap": 1
 		}
-	}`
+	]`
 
 type config struct {
 	scale   int
@@ -131,9 +134,9 @@ func (g *game) init() *game {
 	bg := layers.New("bg")
 	g.movie.Add(game)
 	game.Add(bg)
-	bg.Add(clips.NewSlice(spriteMap, "controls", 0, 0, w, 55))
-	bg.Add(clips.NewSlice(spriteMap, "field", 0, 44, w, h-44))
-	bg.Add(clips.NewSingle(spriteMap, "display", 16, 15))
+	bg.Add(clips.NewScaled(spriteMap, "controls", 0, 0, w, 55))
+	bg.Add(clips.NewScaled(spriteMap, "field", 0, 44, w, h-44))
+	bg.Add(clips.New(spriteMap, "display", 16, 15))
 	//bg.Add(clips.NewSingle(spriteMap, "display", w*16-33, 15))
 	return g
 }
