@@ -137,7 +137,7 @@ func (g *game) init() *game {
 	bg.Add(clips.NewScaled(spriteMap, "controls", 0, 0, w, 55))
 	bg.Add(clips.NewScaled(spriteMap, "field", 0, 44, w, h-44))
 	bg.Add(clips.New(spriteMap, "display", 16, 15))
-	//bg.Add(clips.NewSingle(spriteMap, "display", w*16-33, 15))
+	//bg.Add(clips.New(spriteMap, "display", w*16-33, 15))
 	return g
 }
 
