@@ -25,7 +25,7 @@ func (c *Clip) GetName() string {
 func New(spriteMap *sprites.SpriteMap, name string, x, y int) *Clip {
 	sprite := spriteMap.Sprites[name]
 	srcX, srcY := sprite.X, sprite.Y
-	width, height := *sprite.Width, *sprite.Height
+	width, height := sprite.Width, sprite.Height
 	frame0 := spriteMap.Image.SubImage(image.Rect(srcX, srcY, srcX+width, srcY+height)).(*ebiten.Image)
 	return &Clip{
 		name:   name,

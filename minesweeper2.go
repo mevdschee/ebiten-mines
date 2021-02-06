@@ -45,8 +45,7 @@ var spriteMapMeta = `
 			"y": 82,
 			"width": 41,
 			"height": 25,
-			"count": 1,
-			"gap": 0
+			"count": 1
 		},
 		{
 			"name": "numbers",
@@ -54,8 +53,7 @@ var spriteMapMeta = `
 			"y": 0,
 			"width": 16,
 			"height": 16,
-			"count": 9,
-			"gap": 0
+			"count": 9
 		},
 		{
 			"name": "icons",
@@ -63,8 +61,7 @@ var spriteMapMeta = `
 			"y": 16,
 			"width": 16,
 			"height": 16,
-			"count": 8,
-			"gap": 0
+			"count": 8
 		},
 		{
 			"name": "digits",

@@ -18,15 +18,15 @@ type SpriteMap struct {
 
 // Sprite is the base struct for any sprite
 type Sprite struct {
-	Name    string  `json:"name"`
-	X       int     `json:"x"`
-	Y       int     `json:"y"`
-	Width   *int    `json:"width,omitempty"`
-	Height  *int    `json:"height,omitempty"`
-	Widths  *[3]int `json:"widths,omitempty"`
-	Heights *[3]int `json:"heights,omitempty"`
-	Count   int     `json:"count"`
-	Gap     int     `json:"gap"`
+	Name    string `json:"name"`
+	X       int    `json:"x"`
+	Y       int    `json:"y"`
+	Width   int    `json:"width,omitempty"`
+	Height  int    `json:"height,omitempty"`
+	Widths  [3]int `json:"widths,omitempty"`
+	Heights [3]int `json:"heights,omitempty"`
+	Count   int    `json:"count"`
+	Gap     int    `json:"gap,omitempty"`
 }
 
 func loadImageFromString(b64 string) (*ebiten.Image, error) {
