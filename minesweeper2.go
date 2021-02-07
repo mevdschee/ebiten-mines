@@ -136,11 +136,22 @@ func (g *game) init() *game {
 	return g
 }
 
+func (g *game) setNumbers(bombs, time int) {
+	for i := 0; i < 3; i++ {
+		g.bombs[2-i].Goto(bombs % 10)
+		bombs /= 10
+	}
+	for i := 0; i < 3; i++ {
+		g.time[2-i].Goto(time % 10)
+		time /= 10
+	}
+}
+
 func (g *game) Update() error {
 	if g.movie == nil {
 		g.init()
 	}
-
+	g.setNumbers(10, 123)
 	return g.movie.Update()
 }
 
