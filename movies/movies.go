@@ -2,6 +2,7 @@ package movies
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/mevdschee/minesweeper.go/clips"
 	"github.com/mevdschee/minesweeper.go/scenes"
 )
 
@@ -40,4 +41,16 @@ func (m *Movie) Update() (err error) {
 		err = m.currentScene.Update()
 	}
 	return err
+}
+
+// GetClipByPath gets a clip from the movie by path
+func (m *Movie) GetClipByPath(path string) (*clips.Clip, error) {
+	clip := &clips.Clip{}
+	return clip, nil
+}
+
+// GetClipsByPath gets a clip from the movie by path
+func (m *Movie) GetClipsByPath(path string) ([]*clips.Clip, error) {
+	clips := []*clips.Clip{}
+	return clips, nil
 }

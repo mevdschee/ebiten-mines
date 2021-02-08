@@ -55,8 +55,9 @@ type config struct {
 }
 
 type game struct {
-	c      config
-	movie  *movies.Movie
+	c     config
+	movie *movies.Movie
+	clips
 	bombs  [3]*clips.Clip
 	time   [3]*clips.Clip
 	button *clips.Clip
@@ -136,13 +137,18 @@ func (g *game) init() *game {
 	return g
 }
 
+func (g *game) getClip(name string) (*clips.Clip, error) {
+	path := fmt.Sprintf("game.fg.%s", name)
+	return g.movie.GetClipByPath(path)
+}
+
 func (g *game) setNumbers(bombs, time int) {
 	for i := 0; i < 3; i++ {
-		g.bombs[2-i].Goto(bombs % 10)
+		g.bombs[2-i].Goto(g.bombs % 10)
 		bombs /= 10
 	}
 	for i := 0; i < 3; i++ {
-		g.time[2-i].Goto(time % 10)
+		g.time[2-i].Goto(g.time % 10)
 		time /= 10
 	}
 }
