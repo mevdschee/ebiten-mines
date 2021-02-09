@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -199,6 +200,14 @@ func newGame(c config) *game {
 		g.tiles[y] = make([]tile, g.c.width)
 		for x := 0; x < g.c.width; x++ {
 			g.tiles[y][x] = tile{}
+		}
+	}
+	b := g.c.bombs
+	for b > 0 {
+		x, y := rand.Intn(g.c.width), rand.Intn(g.c.height)
+		if !g.tiles[y][x].bomb {
+			g.tiles[y][x].bomb = true
+			b--
 		}
 	}
 	return g
