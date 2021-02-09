@@ -1,6 +1,8 @@
 package movies
 
 import (
+	"fmt"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mevdschee/minesweeper.go/clips"
 	"github.com/mevdschee/minesweeper.go/scenes"
@@ -43,14 +45,26 @@ func (m *Movie) Update() (err error) {
 	return err
 }
 
-// GetClipByPath gets a clip from the movie by path
-func (m *Movie) GetClipByPath(path string) (*clips.Clip, error) {
-	clip := &clips.Clip{}
-	return clip, nil
+// GetClip gets a clip from the movie
+func (m *Movie) GetClip(scene, layer, clip string) (*clips.Clip, error) {
+	if s, ok := m.scenes[scene]; ok {
+		return s.GetClip(layer, clip)
+	}
+	return nil, fmt.Errorf("GetClip: scene '%s' not found", scene)
 }
 
-// GetClipsByPath gets a clip from the movie by path
-func (m *Movie) GetClipsByPath(path string) ([]*clips.Clip, error) {
+// GetClips gets a series of clips from the movie
+func (m *Movie) GetClips(scene, layer, clip string) ([]*clips.Clip, error) {
 	clips := []*clips.Clip{}
+	for i := 0; true; i++ {
+		c, err := m.GetClip(scene, layer, fmt.Sprintf(clip, i))
+		if err != nil {
+			if i == 0 {
+				return clips, err
+			}
+			break
+		}
+		clips = append(clips, c)
+	}
 	return clips, nil
 }

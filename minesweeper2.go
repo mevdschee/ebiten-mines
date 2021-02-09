@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mevdschee/minesweeper.go/clips"
@@ -57,11 +58,17 @@ type config struct {
 type game struct {
 	c     config
 	movie *movies.Movie
-	clips
-	bombs  [3]*clips.Clip
-	time   [3]*clips.Clip
-	button *clips.Clip
-	tiles  [][]*clips.Clip
+	bombs int
+	time  int64
+	tiles [][]tile
+}
+
+type tile struct {
+	open    bool
+	marked  bool
+	bomb    bool
+	pressed bool
+	number  int
 }
 
 const (
@@ -109,47 +116,50 @@ func (g *game) init() *game {
 	bg.Add(clips.New(spriteMap["display"], "time", w-57, 15))
 	fg := layers.New("fg")
 	game.Add(fg)
-	g.bombs = [3]*clips.Clip{}
 	for i := 0; i < 3; i++ {
-		clip := clips.New(spriteMap["digits"], fmt.Sprintf("bombs-digit-%d", i), 16+2+i*13, 15+2)
-		g.bombs[i] = clip
-		fg.Add(clip)
+		fg.Add(clips.New(spriteMap["digits"], fmt.Sprintf("bombs-digit-%d", i), 16+2+i*13, 15+2))
 	}
-	g.time = [3]*clips.Clip{}
 	for i := 0; i < 3; i++ {
-		clip := clips.New(spriteMap["digits"], fmt.Sprintf("time-digit-%d", i), w-57+2+i*13, 15+2)
-		g.time[i] = clip
-		fg.Add(clip)
+		fg.Add(clips.New(spriteMap["digits"], fmt.Sprintf("time-digit-%d", i), w-57+2+i*13, 15+2))
 	}
-	clip := clips.New(spriteMap["buttons"], "button", w/2-13, 15)
-	g.button = clip
-	fg.Add(clip)
-	g.tiles = make([][]*clips.Clip, g.c.height)
+	fg.Add(clips.New(spriteMap["buttons"], "button", w/2-13, 15))
 	for y := 0; y < g.c.height; y++ {
-		g.tiles[y] = make([]*clips.Clip, g.c.width)
 		for x := 0; x < g.c.width; x++ {
-			clip := clips.New(spriteMap["icons"], fmt.Sprintf("icon-%d-%d", x, y), 12+x*16, 55+y*16)
-			clip.Goto(iconClosed)
-			g.tiles[y][x] = clip
-			fg.Add(clip)
+			fg.Add(clips.New(spriteMap["icons"], fmt.Sprintf("tiles-icon-%d", y*g.c.width+x), 12+x*16, 55+y*16))
 		}
 	}
 	return g
 }
 
-func (g *game) getClip(name string) (*clips.Clip, error) {
-	path := fmt.Sprintf("game.fg.%s", name)
-	return g.movie.GetClipByPath(path)
+func (g *game) getClips(clip string) []*clips.Clip {
+	clips, err := g.movie.GetClips("game", "fg", clip)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return clips
 }
 
-func (g *game) setNumbers(bombs, time int) {
+func (g *game) setNumbers() {
+	bombsDigits := g.getClips("bombs-digit-%d")
+	bombs := g.bombs
 	for i := 0; i < 3; i++ {
-		g.bombs[2-i].Goto(g.bombs % 10)
+		bombsDigits[2-i].Goto(bombs % 10)
 		bombs /= 10
 	}
+	timeDigits := g.getClips("time-digit-%d")
+	time := int((time.Now().UnixNano() - g.time) / 1000000000)
 	for i := 0; i < 3; i++ {
-		g.time[2-i].Goto(g.time % 10)
+		timeDigits[2-i].Goto(time % 10)
 		time /= 10
+	}
+}
+
+func (g *game) setTiles() {
+	icons := g.getClips("tiles-icon-%d")
+	for y := 0; y < g.c.height; y++ {
+		for x := 0; x < g.c.width; x++ {
+			icons[y*g.c.width+x].Goto(iconClosed)
+		}
 	}
 }
 
@@ -157,7 +167,8 @@ func (g *game) Update() error {
 	if g.movie == nil {
 		g.init()
 	}
-	g.setNumbers(10, 123)
+	g.setNumbers()
+	g.setTiles()
 	return g.movie.Update()
 }
 
@@ -165,15 +176,43 @@ func (g *game) Draw(screen *ebiten.Image) {
 	g.movie.Draw(screen)
 }
 
+func newGame(c config) *game {
+	g := &game{
+		c: config{
+			scale:   3,
+			width:   9,
+			height:  9,
+			bombs:   10,
+			holding: 15,
+		},
+	}
+	g.bombs = g.c.bombs
+	g.time = time.Now().UnixNano()
+	g.tiles = make([][]tile, g.c.height)
+	for y := 0; y < g.c.height; y++ {
+		g.tiles[y] = make([]tile, g.c.width)
+		for x := 0; x < g.c.width; x++ {
+			g.tiles[y][x] = tile{
+				open:    false,
+				marked:  false,
+				bomb:    false,
+				pressed: false,
+				number:  0,
+			}
+		}
+	}
+	return g
+}
+
 func main() {
 	ebiten.SetWindowTitle("Minesweeper.go")
-	g := &game{c: config{
+	g := newGame(config{
 		scale:   3,
 		width:   9,
 		height:  9,
 		bombs:   10,
 		holding: 15,
-	}}
+	})
 	width, height := g.getSize()
 	ebiten.SetMaxTPS(30)
 	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)

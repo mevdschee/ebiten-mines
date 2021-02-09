@@ -1,7 +1,10 @@
 package scenes
 
 import (
+	"fmt"
+
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/mevdschee/minesweeper.go/clips"
 	"github.com/mevdschee/minesweeper.go/layers"
 )
 
@@ -63,4 +66,12 @@ func (s *Scene) Update() (err error) {
 		}
 	}
 	return err
+}
+
+// GetClip gets a clip from the scene
+func (s *Scene) GetClip(layer, clip string) (*clips.Clip, error) {
+	if l, ok := s.layers[layer]; ok {
+		return l.GetClip(clip)
+	}
+	return nil, fmt.Errorf("GetClip: layer '%s' not found", layer)
 }

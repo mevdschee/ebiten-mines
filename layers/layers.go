@@ -1,6 +1,8 @@
 package layers
 
 import (
+	"fmt"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mevdschee/minesweeper.go/clips"
 )
@@ -49,4 +51,12 @@ func (l *Layer) Update() (err error) {
 		}
 	}
 	return err
+}
+
+// GetClip gets a clip from the layer
+func (l *Layer) GetClip(clip string) (*clips.Clip, error) {
+	if c, ok := l.clips[clip]; ok {
+		return c, nil
+	}
+	return nil, fmt.Errorf("GetClip: clip '%s' not found", clip)
 }
