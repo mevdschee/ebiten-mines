@@ -158,7 +158,21 @@ func (g *game) setTiles() {
 	icons := g.getClips("tiles-icon-%d")
 	for y := 0; y < g.c.height; y++ {
 		for x := 0; x < g.c.width; x++ {
-			icons[y*g.c.width+x].Goto(iconClosed)
+			icon := iconClosed
+			if g.tiles[y][x].open {
+				if g.tiles[y][x].bomb {
+					icon = iconBomb
+				} else {
+					icon = g.tiles[y][x].number
+				}
+			} else {
+				if g.tiles[y][x].marked {
+					icon = iconMarked
+				} else {
+					icon = iconClosed
+				}
+			}
+			icons[y*g.c.width+x].Goto(icon)
 		}
 	}
 }
@@ -177,28 +191,14 @@ func (g *game) Draw(screen *ebiten.Image) {
 }
 
 func newGame(c config) *game {
-	g := &game{
-		c: config{
-			scale:   3,
-			width:   9,
-			height:  9,
-			bombs:   10,
-			holding: 15,
-		},
-	}
+	g := &game{c: c}
 	g.bombs = g.c.bombs
 	g.time = time.Now().UnixNano()
 	g.tiles = make([][]tile, g.c.height)
 	for y := 0; y < g.c.height; y++ {
 		g.tiles[y] = make([]tile, g.c.width)
 		for x := 0; x < g.c.width; x++ {
-			g.tiles[y][x] = tile{
-				open:    false,
-				marked:  false,
-				bomb:    false,
-				pressed: false,
-				number:  0,
-			}
+			g.tiles[y][x] = tile{}
 		}
 	}
 	return g
