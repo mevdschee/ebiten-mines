@@ -48,6 +48,79 @@ const spriteMapMeta = `
 	{"name":"controls","x":0,"y":82,"widths":[12,1,12],"heights":[11,1,11],"gap":1},
 	{"name":"field","x":0,"y":96,"widths":[12,1,12],"heights":[11,1,11],"gap":1}]`
 
+/*
+func (g *game) init() *game {
+	w, h := g.getSize()
+	spriteMap, err := sprites.NewSpriteMap(spriteMapImage, spriteMapMeta)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	g.movie = movies.New()
+	game := scenes.New("game")
+	bg := layers.New("bg")
+	g.movie.Add(game)
+	game.Add(bg)
+	bg.Add(clips.NewScaled(spriteMap["controls"], "controls", 0, 0, w, 55))
+	bg.Add(clips.NewScaled(spriteMap["field"], "field", 0, 44, w, h-44))
+	bg.Add(clips.New(spriteMap["display"], "bombs", 16, 15))
+	bg.Add(clips.New(spriteMap["display"], "time", w-57, 15))
+	fg := layers.New("fg")
+	game.Add(fg)
+	for i := 0; i < 3; i++ {
+		fg.Add(clips.New(spriteMap["digits"], fmt.Sprintf("bombs-digit-%d", i), 16+2+i*13, 15+2))
+	}
+	for i := 0; i < 3; i++ {
+		fg.Add(clips.New(spriteMap["digits"], fmt.Sprintf("time-digit-%d", i), w-57+2+i*13, 15+2))
+	}
+	fg.Add(clips.New(spriteMap["buttons"], "button", w/2-13, 15))
+	for y := 0; y < g.c.height; y++ {
+		for x := 0; x < g.c.width; x++ {
+			fg.Add(clips.New(spriteMap["icons"], fmt.Sprintf("tiles-icon-%d", y*g.c.width+x), 12+x*16, 55+y*16))
+		}
+	}
+	return g
+}
+
+*/
+
+const movieLayout = `
+	[
+		{
+			"name": "game",
+			"layers": [
+				{
+					"name": "bg",
+					"clips": [
+						{
+							"sprite": "controls",
+							"x": 0,
+							"y": 0,
+							"width": "width",
+							"height": 55,
+						},
+						{
+							"sprite": "field",
+							"x": 0,
+							"y": 44,
+							"width": "width",
+							"height": "height-44",
+						},
+						{
+							"sprite": "display",
+							"x": 16,
+							"y": 15,
+						},
+						{
+							"sprite": "display",
+							"x": "width-57",
+							"y": 15,
+						}
+					]
+				}
+			]
+		}
+	]`
+
 type config struct {
 	scale   int
 	width   int
