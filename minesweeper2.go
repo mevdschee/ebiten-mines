@@ -115,11 +115,11 @@ func (g *game) init() *game {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	movie, err := movies.FromJson(spriteMap, movieLayout, g.c)
+	movie, err := movies.FromJSON(spriteMap, movieScenes, g.c)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	g.movie = g.movie
+	g.movie = movie
 	return g
 }
 

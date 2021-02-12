@@ -7,6 +7,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mevdschee/minesweeper.go/clips"
 	"github.com/mevdschee/minesweeper.go/scenes"
+	"github.com/mevdschee/minesweeper.go/sprites"
 )
 
 // Movie is a set of scenes
@@ -23,17 +24,14 @@ func New() *Movie {
 	}
 }
 
-// FromJson creates a new movie from JSON
-func FromJson(spriteMap *SpriteMap, json string, parameters *interface{}) *Movie {
+// FromJSON creates a new movie from JSON
+func FromJSON(spriteMap sprites.SpriteMap, data string, parameters interface{}) (*Movie, error) {
 	var inInterface map[string]interface{}
 	inrec, _ := json.Marshal(parameters)
 	json.Unmarshal(inrec, &inInterface)
-	movie := Movie{}
 
-		currentScene: nil,
-		scenes:       map[string]*scenes.Scene{},
-	}
-	return &movie
+	movie := Movie{}
+	return &movie, nil
 }
 
 // Add adds a scene to the movie
