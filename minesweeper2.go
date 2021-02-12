@@ -48,15 +48,15 @@ const spriteMapMeta = `
 const movieScenes = `
 	[{"name":"game","layers":[{"name":"bg","clips":[
 		{"sprite":"controls","x":"0","y":"0","width":"w*16+24","height":"55"},
-    	{"sprite":"field","x":"0","y":"44","width":"w*16+24","height":"h*16+22"},
-    	{"sprite":"display","x":"16","y":"15"},
+		{"sprite":"field","x":"0","y":"44","width":"w*16+24","height":"h*16+22"},
+		{"sprite":"display","x":"16","y":"15"},
 		{"sprite":"display","x":"w*16-33","y":"15"}
 	]}{"name":"fg","clips":[
 		{"sprite":"digits","name":"bombs-digit-%d","repeat":"3","x":"18+i*13","y":"17"},
 		{"sprite":"digits","name":"time-digit-%d","repeat":"3","x":"w*16-31+i*13","y":"17"},
 		{"sprite":"buttons","name":"button","x":"(w*16)/2-1","y":"15"},
-    	{"sprite":"icons","name":"time-digit-%d","repeat":"w*h","x":"12+(i%w)*16","y":"55+(i/w)*16"}
-    ]}]}]`
+		{"sprite":"icons","name":"time-digit-%d","repeat":"w*h","x":"12+(i%w)*16","y":"55+(i/w)*16"}
+	]}]}]`
 
 type config struct {
 	scale   int

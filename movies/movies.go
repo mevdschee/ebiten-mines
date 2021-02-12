@@ -1,6 +1,7 @@
 package movies
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -20,6 +21,19 @@ func New() *Movie {
 		currentScene: nil,
 		scenes:       map[string]*scenes.Scene{},
 	}
+}
+
+// FromJson creates a new movie from JSON
+func FromJson(spriteMap *SpriteMap, json string, parameters *interface{}) *Movie {
+	var inInterface map[string]interface{}
+	inrec, _ := json.Marshal(parameters)
+	json.Unmarshal(inrec, &inInterface)
+	movie := Movie{}
+
+		currentScene: nil,
+		scenes:       map[string]*scenes.Scene{},
+	}
+	return &movie
 }
 
 // Add adds a scene to the movie
