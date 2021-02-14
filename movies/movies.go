@@ -27,7 +27,10 @@ func New() *Movie {
 // FromJSON creates a new movie from JSON
 func FromJSON(spriteMap sprites.SpriteMap, data string, parameters map[string]interface{}) (*Movie, error) {
 	sceneJSONs := []scenes.SceneJSON{}
-	json.Unmarshal([]byte(data), &sceneJSONs)
+	err := json.Unmarshal([]byte(data), &sceneJSONs)
+	if err != nil {
+		return nil, err
+	}
 	movie := Movie{
 		currentScene: &scenes.Scene{},
 		scenes:       map[string]*scenes.Scene{},
