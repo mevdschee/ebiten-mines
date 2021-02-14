@@ -110,7 +110,7 @@ func (g *game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 	return g.getSize()
 }
 
-func (g *game) init() *game {
+func (g *game) init() {
 	spriteMap, err := sprites.NewSpriteMap(spriteMapImage, spriteMapMeta)
 	if err != nil {
 		log.Fatalln(err)
@@ -124,7 +124,6 @@ func (g *game) init() *game {
 		log.Fatalln(err)
 	}
 	g.movie = movie
-	return g
 }
 
 func (g *game) getClips(clip string) []*clips.Clip {
