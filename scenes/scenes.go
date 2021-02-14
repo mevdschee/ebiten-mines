@@ -6,6 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mevdschee/minesweeper.go/clips"
 	"github.com/mevdschee/minesweeper.go/layers"
+	"github.com/mevdschee/minesweeper.go/sprites"
 )
 
 // Scene is a set of layers
@@ -13,6 +14,12 @@ type Scene struct {
 	name   string
 	layers map[string]*layers.Layer
 	order  []string
+}
+
+// SceneJSON is a set of layers in JSON
+type SceneJSON struct {
+	Name   string
+	Layers []layers.LayerJSON
 }
 
 var (
@@ -43,6 +50,23 @@ func New(name string) *Scene {
 	}
 }
 
+// FromJSON creates a new scene from JSON
+func FromJSON(spriteMap sprites.SpriteMap, sceneJSON SceneJSON, parameters map[string]interface{}) (*Scene, error) {
+	scene := Scene{
+		name:   sceneJSON.Name,
+		layers: map[string]*layers.Layer{},
+		order:  []string{},
+	}
+	for _, layerJSON := range sceneJSON.Layers {
+		layer, err := layers.FromJSON(spriteMap, layerJSON, parameters)
+		if err != nil {
+			return nil, err
+		}
+		scene.Add(layer)
+	}
+	return &scene, nil
+}
+
 // Add adds a layers to the scene
 func (s *Scene) Add(layer *layers.Layer) {
 	name := layer.GetName()
@@ -69,9 +93,9 @@ func (s *Scene) Update() (err error) {
 }
 
 // GetClip gets a clip from the scene
-func (s *Scene) GetClip(layer, clip string) (*clips.Clip, error) {
+func (s *Scene) GetClip(layer, clip string, i int) (*clips.Clip, error) {
 	if l, ok := s.layers[layer]; ok {
-		return l.GetClip(clip)
+		return l.GetClip(clip, i)
 	}
 	return nil, fmt.Errorf("GetClip: layer '%s' not found", layer)
 }

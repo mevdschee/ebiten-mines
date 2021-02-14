@@ -51,11 +51,11 @@ const movieScenes = `
 		{"sprite":"field","x":"0","y":"44","width":"w*16+24","height":"h*16+22"},
 		{"sprite":"display","x":"16","y":"15"},
 		{"sprite":"display","x":"w*16-33","y":"15"}
-	]}{"name":"fg","clips":[
-		{"sprite":"digits","name":"bombs-digit-%d","repeat":"3","x":"18+i*13","y":"17"},
-		{"sprite":"digits","name":"time-digit-%d","repeat":"3","x":"w*16-31+i*13","y":"17"},
+	]},{"name":"fg","clips":[
+		{"sprite":"digits","name":"bombs","repeat":"3","x":"18+i*13","y":"17"},
+		{"sprite":"digits","name":"time","repeat":"3","x":"w*16-31+i*13","y":"17"},
 		{"sprite":"buttons","name":"button","x":"(w*16)/2-1","y":"15"},
-		{"sprite":"icons","name":"time-digit-%d","repeat":"w*h","x":"12+(i%w)*16","y":"55+(i/w)*16"}
+		{"sprite":"icons","name":"icons","repeat":"w*h","x":"12+(i%w)*16","y":"55+(i/w)*16"}
 	]}]}]`
 
 type config struct {
@@ -115,7 +115,11 @@ func (g *game) init() *game {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	movie, err := movies.FromJSON(spriteMap, movieScenes, g.c)
+	parameters := map[string]interface{}{
+		"w": g.c.width,
+		"h": g.c.height,
+	}
+	movie, err := movies.FromJSON(spriteMap, movieScenes, parameters)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -132,13 +136,13 @@ func (g *game) getClips(clip string) []*clips.Clip {
 }
 
 func (g *game) setNumbers() {
-	bombsDigits := g.getClips("bombs-digit-%d")
+	bombsDigits := g.getClips("bombs")
 	bombs := g.bombs
 	for i := 0; i < 3; i++ {
 		bombsDigits[2-i].Goto(bombs % 10)
 		bombs /= 10
 	}
-	timeDigits := g.getClips("time-digit-%d")
+	timeDigits := g.getClips("time")
 	time := int((time.Now().UnixNano() - g.time) / 1000000000)
 	for i := 0; i < 3; i++ {
 		timeDigits[2-i].Goto(time % 10)
@@ -147,7 +151,7 @@ func (g *game) setNumbers() {
 }
 
 func (g *game) setTiles() {
-	icons := g.getClips("tiles-icon-%d")
+	icons := g.getClips("icons")
 	for y := 0; y < g.c.height; y++ {
 		for x := 0; x < g.c.width; x++ {
 			icon := iconClosed

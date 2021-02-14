@@ -16,6 +16,15 @@ type Clip struct {
 	frames        []*ebiten.Image
 }
 
+// ClipJSON is a clip in JSON
+type ClipJSON struct {
+	Name          string
+	Sprite        string
+	Repeat        string
+	X, Y          string
+	Width, Height string
+}
+
 // GetName gets the name of the clip
 func (c *Clip) GetName() string {
 	return c.name

@@ -25,12 +25,20 @@ func New() *Movie {
 }
 
 // FromJSON creates a new movie from JSON
-func FromJSON(spriteMap sprites.SpriteMap, data string, parameters interface{}) (*Movie, error) {
-	var inInterface map[string]interface{}
-	inrec, _ := json.Marshal(parameters)
-	json.Unmarshal(inrec, &inInterface)
-
-	movie := Movie{}
+func FromJSON(spriteMap sprites.SpriteMap, data string, parameters map[string]interface{}) (*Movie, error) {
+	sceneJSONs := []scenes.SceneJSON{}
+	json.Unmarshal([]byte(data), &sceneJSONs)
+	movie := Movie{
+		currentScene: &scenes.Scene{},
+		scenes:       map[string]*scenes.Scene{},
+	}
+	for _, sceneJSON := range sceneJSONs {
+		scene, err := scenes.FromJSON(spriteMap, sceneJSON, parameters)
+		if err != nil {
+			return nil, err
+		}
+		movie.Add(scene)
+	}
 	return &movie, nil
 }
 
@@ -59,8 +67,13 @@ func (m *Movie) Update() (err error) {
 
 // GetClip gets a clip from the movie
 func (m *Movie) GetClip(scene, layer, clip string) (*clips.Clip, error) {
+	return m.getClip(scene, layer, clip, 0)
+}
+
+// GetClip gets a clip from the movie
+func (m *Movie) getClip(scene, layer, clip string, i int) (*clips.Clip, error) {
 	if s, ok := m.scenes[scene]; ok {
-		return s.GetClip(layer, clip)
+		return s.GetClip(layer, clip, i)
 	}
 	return nil, fmt.Errorf("GetClip: scene '%s' not found", scene)
 }
@@ -69,7 +82,7 @@ func (m *Movie) GetClip(scene, layer, clip string) (*clips.Clip, error) {
 func (m *Movie) GetClips(scene, layer, clip string) ([]*clips.Clip, error) {
 	clips := []*clips.Clip{}
 	for i := 0; true; i++ {
-		c, err := m.GetClip(scene, layer, fmt.Sprintf(clip, i))
+		c, err := m.getClip(scene, layer, clip, i)
 		if err != nil {
 			if i == 0 {
 				return clips, err
