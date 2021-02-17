@@ -13,6 +13,7 @@ On Ubuntu 20.04 I had to install the libxxf86vm (Extension library for the XFree
     sudo apt install libxxf86vm-dev
 
 
+On Ubuntu 18.04 I had to install the libgl1-mesa and libgtk-3 development package:
 
-    
-  
+    sudo apt install libgl1-mesa-dev
+    sudo apt install libgtk-3-dev
