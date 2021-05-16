@@ -205,10 +205,14 @@ func (g *game) setTiles() {
 					icon = g.tiles[y][x].number
 				}
 			} else {
-				if g.tiles[y][x].marked {
-					icon = iconMarked
+				if g.tiles[y][x].pressed {
+					icon = iconEmpty
 				} else {
-					icon = iconClosed
+					if g.tiles[y][x].marked {
+						icon = iconMarked
+					} else {
+						icon = iconClosed
+					}
 				}
 			}
 			icons[y*g.c.width+x].GotoFrame(icon)
