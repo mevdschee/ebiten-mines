@@ -67,11 +67,12 @@ type config struct {
 }
 
 type game struct {
-	c     config
-	movie *movies.Movie
-	bombs int
-	time  int64
-	tiles [][]tile
+	c      config
+	movie  *movies.Movie
+	button int
+	bombs  int
+	time   int64
+	tiles  [][]tile
 }
 
 type tile struct {
@@ -81,6 +82,14 @@ type tile struct {
 	pressed bool
 	number  int
 }
+
+const (
+	buttonPlaying = iota
+	buttonEvaluate
+	buttonLost
+	buttonWon
+	buttonPressed
+)
 
 const (
 	iconEmpty = iota
@@ -134,17 +143,52 @@ func (g *game) getClips(clip string) []*clips.Clip {
 	return clips
 }
 
+func (g *game) setHandlers() {
+	button := g.getClips("button")[0]
+	button.OnPress(func() { g.button = buttonPressed })
+	button.OnRelease(func() {
+		if g.button == buttonPressed {
+			log.Println("click")
+		}
+		g.button = buttonPlaying
+	})
+	button.OnReleaseOutside(func() { button.GotoFrame(0) })
+	icons := g.getClips("icons")
+	for y := 0; y < g.c.height; y++ {
+		for x := 0; x < g.c.width; x++ {
+			px, py := x, y
+			icons[y*g.c.width+x].OnPress(func() {
+				g.tiles[py][px].pressed = true
+				g.button = buttonEvaluate
+			})
+			icons[y*g.c.width+x].OnRelease(func() {
+				g.tiles[py][px].pressed = false
+				g.button = buttonPlaying
+			})
+			icons[y*g.c.width+x].OnReleaseOutside(func() {
+				g.tiles[py][px].pressed = false
+				g.button = buttonPlaying
+			})
+		}
+	}
+}
+
+func (g *game) setButton() {
+	button := g.getClips("button")[0]
+	button.GotoFrame(g.button)
+}
+
 func (g *game) setNumbers() {
 	bombsDigits := g.getClips("bombs")
 	bombs := g.bombs
 	for i := 0; i < 3; i++ {
-		bombsDigits[2-i].Goto(bombs % 10)
+		bombsDigits[2-i].GotoFrame(bombs % 10)
 		bombs /= 10
 	}
 	timeDigits := g.getClips("time")
 	time := int((time.Now().UnixNano() - g.time) / 1000000000)
 	for i := 0; i < 3; i++ {
-		timeDigits[2-i].Goto(time % 10)
+		timeDigits[2-i].GotoFrame(time % 10)
 		time /= 10
 	}
 }
@@ -167,7 +211,7 @@ func (g *game) setTiles() {
 					icon = iconClosed
 				}
 			}
-			icons[y*g.c.width+x].Goto(icon)
+			icons[y*g.c.width+x].GotoFrame(icon)
 		}
 	}
 }
@@ -175,7 +219,9 @@ func (g *game) setTiles() {
 func (g *game) Update() error {
 	if g.movie == nil {
 		g.init()
+		g.setHandlers()
 	}
+	g.setButton()
 	g.setNumbers()
 	g.setTiles()
 	return g.movie.Update()

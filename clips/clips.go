@@ -4,16 +4,22 @@ import (
 	"image"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/mevdschee/minesweeper.go/sprites"
 )
 
+type ClickHandlerFunc func()
+
 // Clip is a set of frames
 type Clip struct {
-	name          string
-	x, y          int
-	width, height int
-	frame         int
-	frames        []*ebiten.Image
+	name             string
+	x, y             int
+	width, height    int
+	frame            int
+	frames           []*ebiten.Image
+	onPress          ClickHandlerFunc
+	onRelease        ClickHandlerFunc
+	onReleaseOutside ClickHandlerFunc
 }
 
 // ClipJSON is a clip in JSON
@@ -114,13 +120,54 @@ func (c *Clip) Draw(screen *ebiten.Image) {
 	screen.DrawImage(img, op)
 }
 
-// Goto goes to a frame of the clip
-func (c *Clip) Goto(frame int) {
+// GotoFrame goes to a frame of the clip
+func (c *Clip) GotoFrame(frame int) {
 	c.frame = frame
+}
+
+// OnPress sets the click handler function
+func (c *Clip) OnPress(handler ClickHandlerFunc) {
+	c.onPress = handler
+}
+
+// OnRelease sets the click handler function
+func (c *Clip) OnRelease(handler ClickHandlerFunc) {
+	c.onRelease = handler
+}
+
+// OnReleaseOutside sets the click handler function
+func (c *Clip) OnReleaseOutside(handler ClickHandlerFunc) {
+	c.onReleaseOutside = handler
+}
+
+// IsHovered returns whether or not the cursor is hovering the clip
+func (c *Clip) IsHovered() bool {
+	cursorX, cursorY := ebiten.CursorPosition()
+	cursor := image.Point{cursorX, cursorY}
+	rect := image.Rect(c.x, c.y, c.x+c.width, c.y+c.height)
+	return cursor.In(rect)
 }
 
 // Update updates the clip
 func (c *Clip) Update() (err error) {
+	if c.IsHovered() {
+		if c.onPress != nil {
+			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+				c.onPress()
+			}
+		}
+		if c.onRelease != nil {
+			if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+				c.onRelease()
+			}
+		}
+	} else {
+		if c.onReleaseOutside != nil {
+			if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+				c.onReleaseOutside()
+			}
+		}
+	}
 	//if c.fps > 0 && c.ticks%(60/c.fps) == 0 {
 	//	c.frame = (c.frame + 1) % len(c.frames)
 	//}
