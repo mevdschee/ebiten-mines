@@ -145,17 +145,17 @@ func (g *game) getClips(clip string) []*clips.Clip {
 
 func (g *game) setHandlers() {
 	button := g.getClips("button")[0]
-	button.OnPress(func() { 
-		g.button = buttonPressed 
+	button.OnPress(func() {
+		g.button = buttonPressed
 	})
 	button.OnRelease(func() {
 		if g.button == buttonPressed {
-			log.Println("click btn")
+			log.Println("left click btn")
 		}
 		g.button = buttonPlaying
 	})
-	button.OnReleaseOutside(func() { 
-		g.button = buttonPlaying 
+	button.OnReleaseOutside(func() {
+		g.button = buttonPlaying
 	})
 	icons := g.getClips("icons")
 	for y := 0; y < g.c.height; y++ {
@@ -167,7 +167,7 @@ func (g *game) setHandlers() {
 			})
 			icons[y*g.c.width+x].OnRelease(func() {
 				if g.tiles[py][px].pressed {
-					log.Printf("click %d,%d\n",px,py);
+					g.leftClickTile(px, py)
 				}
 				g.tiles[py][px].pressed = false
 				g.button = buttonPlaying
@@ -177,6 +177,22 @@ func (g *game) setHandlers() {
 				g.button = buttonPlaying
 			})
 		}
+	}
+}
+
+func (g *game) leftClickTile(x, y int) {
+	log.Printf("left click %d,%d\n", x, y)
+	tile := g.tiles[y][x]
+	if !tile.open {
+		g.tiles[y][x].open = true
+	}
+}
+
+func (g *game) rightClickTile(x, y int) {
+	log.Printf("right click %d,%d\n", x, y)
+	tile := g.tiles[x][y]
+	if !tile.open {
+		g.tiles[x][y].marked = true
 	}
 }
 
@@ -259,6 +275,13 @@ func newGame(c config) *game {
 		if !g.tiles[y][x].bomb {
 			g.tiles[y][x].bomb = true
 			b--
+			for dy := -1; dy <= 1; dy++ {
+				for dx := -1; dx <= 1; dx++ {
+					if y+dy >= 0 && y+dy < g.c.height && x+dx >= 0 && x+dx < g.c.width {
+						g.tiles[y+dy][x+dx].number++
+					}
+				}
+			}
 		}
 	}
 	return g
