@@ -2,6 +2,7 @@ package clips
 
 import (
 	"image"
+	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -156,6 +157,7 @@ func (c *Clip) IsHovered() bool {
 
 // Update updates the clip
 func (c *Clip) Update() (err error) {
+	log.Println(inpututil.JustPressedTouchIDs())
 	if c.IsHovered() {
 		if c.onPress != nil {
 			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
