@@ -2,7 +2,6 @@ package clips
 
 import (
 	"image"
-	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -157,36 +156,26 @@ func (c *Clip) IsHovered() bool {
 
 // Update updates the clip
 func (c *Clip) Update() (err error) {
-	log.Println(inpututil.JustPressedTouchIDs())
-	if c.IsHovered() {
-		if c.onPress != nil {
-			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-				c.onPress(-1)
-			}
-		}
-		if c.onLongPress != nil {
-			if inpututil.MouseButtonPressDuration(ebiten.MouseButtonLeft) == ebiten.MaxTPS()/2 {
-				c.onLongPress(-1)
-			}
-		}
-		if c.onRelease != nil {
-			if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-				c.onRelease(-1)
-			}
-		}
-	} else {
-		if c.onReleaseOutside != nil {
-			if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-				c.onReleaseOutside(-1)
-			}
+	hover := c.IsHovered()
+	if c.onPress != nil {
+		if hover && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			c.onPress(-1)
 		}
 	}
-	//if c.fps > 0 && c.ticks%(60/c.fps) == 0 {
-	//	c.frame = (c.frame + 1) % len(c.frames)
-	//}
-	//if moving do:
-	//c.x++
-	//if resizing do:
-	//c.height--
+	if c.onLongPress != nil {
+		if hover && inpututil.MouseButtonPressDuration(ebiten.MouseButtonLeft) == ebiten.MaxTPS()/2 {
+			c.onLongPress(-1)
+		}
+	}
+	if c.onRelease != nil {
+		if hover && inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+			c.onRelease(-1)
+		}
+	}
+	if c.onReleaseOutside != nil {
+		if !hover && inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+			c.onReleaseOutside(-1)
+		}
+	}
 	return nil
 }

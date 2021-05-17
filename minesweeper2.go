@@ -150,34 +150,48 @@ func (g *game) setHandlers() {
 	})
 	button.OnRelease(func(id int) {
 		if g.button == buttonPressed {
-			log.Println("left click btn")
+			g.plantBombs()
 		}
-		g.button = buttonPlaying
 	})
 	button.OnReleaseOutside(func(id int) {
-		g.button = buttonPlaying
+		if g.button == buttonPressed {
+			g.plantBombs()
+		}
 	})
 	icons := g.getClips("icons")
 	for y := 0; y < g.c.height; y++ {
 		for x := 0; x < g.c.width; x++ {
 			px, py := x, y
 			icons[y*g.c.width+x].OnPress(func(id int) {
-				g.tiles[py][px].pressed = true
+				if g.button == buttonWon || g.button == buttonLost {
+					return
+				}
 				g.button = buttonEvaluate
+				g.tiles[py][px].pressed = true
 			})
 			icons[y*g.c.width+x].OnLongPress(func(id int) {
+				if g.button == buttonWon || g.button == buttonLost {
+					return
+				}
 				g.onPressTile(px, py, true)
+				g.tiles[py][px].pressed = false
 			})
 			icons[y*g.c.width+x].OnRelease(func(id int) {
+				if g.button == buttonWon || g.button == buttonLost {
+					return
+				}
+				g.button = buttonPlaying
 				if g.tiles[py][px].pressed {
 					g.onPressTile(px, py, false)
 				}
 				g.tiles[py][px].pressed = false
-				g.button = buttonPlaying
 			})
 			icons[y*g.c.width+x].OnReleaseOutside(func(id int) {
-				g.tiles[py][px].pressed = false
+				if g.button == buttonWon || g.button == buttonLost {
+					return
+				}
 				g.button = buttonPlaying
+				g.tiles[py][px].pressed = false
 			})
 		}
 	}
@@ -212,15 +226,27 @@ func (g *game) onPressTile(x, y int, long bool) {
 	} else {
 		if long {
 			g.tiles[y][x].marked = !g.tiles[y][x].marked
-			g.tiles[y][x].pressed = false
 		} else {
 			g.tiles[y][x].open = true
+			if g.tiles[y][x].bomb {
+				g.onGameOver(x, y, true)
+				return
+			}
 			if g.tiles[y][x].number == 0 {
 				g.forEachNeighbour(x, y, func(x, y int) {
 					g.onPressTile(x, y, false)
 				})
 			}
 		}
+	}
+}
+
+func (g *game) onGameOver(x, y int, lost bool) {
+	log.Println("game over")
+	if lost {
+		g.button = buttonLost
+	} else {
+		g.button = buttonWon
 	}
 }
 
@@ -291,6 +317,11 @@ func newGame(c config) *game {
 	g.bombs = g.c.bombs
 	g.time = time.Now().UnixNano()
 	rand.Seed(g.time)
+	g.plantBombs()
+	return g
+}
+
+func (g *game) plantBombs() {
 	g.tiles = make([][]tile, g.c.height)
 	for y := 0; y < g.c.height; y++ {
 		g.tiles[y] = make([]tile, g.c.width)
@@ -309,7 +340,6 @@ func newGame(c config) *game {
 			})
 		}
 	}
-	return g
 }
 
 func main() {
