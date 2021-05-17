@@ -167,7 +167,7 @@ func (g *game) setHandlers() {
 			})
 			icons[y*g.c.width+x].OnRelease(func() {
 				if g.tiles[py][px].pressed {
-					g.leftClickTile(px, py)
+					g.onPressTile(px, py)
 				}
 				g.tiles[py][px].pressed = false
 				g.button = buttonPlaying
@@ -196,24 +196,16 @@ func (g *game) forEachNeighbour(x, y int, do func(x, y int)) {
 	}
 }
 
-func (g *game) leftClickTile(x, y int) {
-	log.Printf("left click %d,%d\n", x, y)
+func (g *game) onPressTile(x, y int) {
+	log.Printf("press %d,%d\n", x, y)
 	tile := g.tiles[y][x]
 	if !tile.open {
 		g.tiles[y][x].open = true
 		if g.tiles[y][x].number == 0 {
 			g.forEachNeighbour(x, y, func(x, y int) {
-				g.leftClickTile(x, y)
+				g.onPressTile(x, y)
 			})
 		}
-	}
-}
-
-func (g *game) rightClickTile(x, y int) {
-	log.Printf("right click %d,%d\n", x, y)
-	tile := g.tiles[x][y]
-	if !tile.open {
-		g.tiles[x][y].marked = true
 	}
 }
 
