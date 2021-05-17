@@ -8,7 +8,7 @@ import (
 	"github.com/mevdschee/minesweeper.go/sprites"
 )
 
-type ClickHandlerFunc func()
+type InputHandlerFunc func(id int)
 
 // Clip is a set of frames
 type Clip struct {
@@ -17,9 +17,10 @@ type Clip struct {
 	width, height    int
 	frame            int
 	frames           []*ebiten.Image
-	onPress          ClickHandlerFunc
-	onRelease        ClickHandlerFunc
-	onReleaseOutside ClickHandlerFunc
+	onPress          InputHandlerFunc
+	onLongPress      InputHandlerFunc
+	onRelease        InputHandlerFunc
+	onReleaseOutside InputHandlerFunc
 }
 
 // ClipJSON is a clip in JSON
@@ -126,17 +127,22 @@ func (c *Clip) GotoFrame(frame int) {
 }
 
 // OnPress sets the click handler function
-func (c *Clip) OnPress(handler ClickHandlerFunc) {
+func (c *Clip) OnPress(handler InputHandlerFunc) {
 	c.onPress = handler
 }
 
+// OnLongPress sets the click handler function
+func (c *Clip) OnLongPress(handler InputHandlerFunc) {
+	c.onLongPress = handler
+}
+
 // OnRelease sets the click handler function
-func (c *Clip) OnRelease(handler ClickHandlerFunc) {
+func (c *Clip) OnRelease(handler InputHandlerFunc) {
 	c.onRelease = handler
 }
 
 // OnReleaseOutside sets the click handler function
-func (c *Clip) OnReleaseOutside(handler ClickHandlerFunc) {
+func (c *Clip) OnReleaseOutside(handler InputHandlerFunc) {
 	c.onReleaseOutside = handler
 }
 
@@ -153,18 +159,18 @@ func (c *Clip) Update() (err error) {
 	if c.IsHovered() {
 		if c.onPress != nil {
 			if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-				c.onPress()
+				c.onPress(-1)
 			}
 		}
 		if c.onRelease != nil {
 			if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-				c.onRelease()
+				c.onRelease(-1)
 			}
 		}
 	} else {
 		if c.onReleaseOutside != nil {
 			if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-				c.onReleaseOutside()
+				c.onReleaseOutside(-1)
 			}
 		}
 	}

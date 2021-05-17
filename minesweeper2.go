@@ -145,34 +145,34 @@ func (g *game) getClips(clip string) []*clips.Clip {
 
 func (g *game) setHandlers() {
 	button := g.getClips("button")[0]
-	button.OnPress(func() {
+	button.OnPress(func(id int) {
 		g.button = buttonPressed
 	})
-	button.OnRelease(func() {
+	button.OnRelease(func(id int) {
 		if g.button == buttonPressed {
 			log.Println("left click btn")
 		}
 		g.button = buttonPlaying
 	})
-	button.OnReleaseOutside(func() {
+	button.OnReleaseOutside(func(id int) {
 		g.button = buttonPlaying
 	})
 	icons := g.getClips("icons")
 	for y := 0; y < g.c.height; y++ {
 		for x := 0; x < g.c.width; x++ {
 			px, py := x, y
-			icons[y*g.c.width+x].OnPress(func() {
+			icons[y*g.c.width+x].OnPress(func(id int) {
 				g.tiles[py][px].pressed = true
 				g.button = buttonEvaluate
 			})
-			icons[y*g.c.width+x].OnRelease(func() {
+			icons[y*g.c.width+x].OnRelease(func(id int) {
 				if g.tiles[py][px].pressed {
 					g.onPressTile(px, py)
 				}
 				g.tiles[py][px].pressed = false
 				g.button = buttonPlaying
 			})
-			icons[y*g.c.width+x].OnReleaseOutside(func() {
+			icons[y*g.c.width+x].OnReleaseOutside(func(id int) {
 				g.tiles[py][px].pressed = false
 				g.button = buttonPlaying
 			})
@@ -197,7 +197,6 @@ func (g *game) forEachNeighbour(x, y int, do func(x, y int)) {
 }
 
 func (g *game) onPressTile(x, y int) {
-	log.Printf("press %d,%d\n", x, y)
 	tile := g.tiles[y][x]
 	if !tile.open {
 		g.tiles[y][x].open = true
