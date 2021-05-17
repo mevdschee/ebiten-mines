@@ -242,7 +242,6 @@ func (g *game) onPressTile(x, y int, long bool) {
 }
 
 func (g *game) onGameOver(x, y int, lost bool) {
-	log.Println("game over")
 	if lost {
 		g.button = buttonLost
 	} else {
