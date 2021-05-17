@@ -180,11 +180,32 @@ func (g *game) setHandlers() {
 	}
 }
 
+func (g *game) forEachNeighbour(x, y int, do func(x, y int)) {
+	for i := 0; i < 9; i++ {
+		dy, dx := i/3-1, i%3-1
+		if dy == 0 && dx == 0 {
+			continue
+		}
+		if y+dy < 0 || x+dx < 0 {
+			continue
+		}
+		if y+dy >= g.c.height || x+dx >= g.c.width {
+			continue
+		}
+		do(x+dx, y+dy)
+	}
+}
+
 func (g *game) leftClickTile(x, y int) {
 	log.Printf("left click %d,%d\n", x, y)
 	tile := g.tiles[y][x]
 	if !tile.open {
 		g.tiles[y][x].open = true
+		if g.tiles[y][x].number == 0 {
+			g.forEachNeighbour(x, y, func(x, y int) {
+				g.leftClickTile(x, y)
+			})
+		}
 	}
 }
 
@@ -275,13 +296,9 @@ func newGame(c config) *game {
 		if !g.tiles[y][x].bomb {
 			g.tiles[y][x].bomb = true
 			b--
-			for dy := -1; dy <= 1; dy++ {
-				for dx := -1; dx <= 1; dx++ {
-					if y+dy >= 0 && y+dy < g.c.height && x+dx >= 0 && x+dx < g.c.width {
-						g.tiles[y+dy][x+dx].number++
-					}
-				}
-			}
+			g.forEachNeighbour(x, y, func(x, y int) {
+				g.tiles[y][x].number++
+			})
 		}
 	}
 	return g
