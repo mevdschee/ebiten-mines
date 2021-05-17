@@ -342,6 +342,7 @@ func (g *game) restart() {
 }
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	ebiten.SetWindowTitle("Minesweeper.go")
 	g := newGame(config{
 		scale:   3,
@@ -354,7 +355,6 @@ func main() {
 	width, height := g.getSize()
 	ebiten.SetMaxTPS(30)
 	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
-	rand.Seed(g.time)
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatalf("%v\n", err)
 	}
