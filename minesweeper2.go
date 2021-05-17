@@ -165,9 +165,12 @@ func (g *game) setHandlers() {
 				g.tiles[py][px].pressed = true
 				g.button = buttonEvaluate
 			})
+			icons[y*g.c.width+x].OnLongPress(func(id int) {
+				g.onPressTile(px, py, true)
+			})
 			icons[y*g.c.width+x].OnRelease(func(id int) {
 				if g.tiles[py][px].pressed {
-					g.onPressTile(px, py)
+					g.onPressTile(px, py, false)
 				}
 				g.tiles[py][px].pressed = false
 				g.button = buttonPlaying
@@ -196,14 +199,27 @@ func (g *game) forEachNeighbour(x, y int, do func(x, y int)) {
 	}
 }
 
-func (g *game) onPressTile(x, y int) {
+func (g *game) onPressTile(x, y int, long bool) {
 	tile := g.tiles[y][x]
-	if !tile.open {
-		g.tiles[y][x].open = true
-		if g.tiles[y][x].number == 0 {
+	if tile.open {
+		if long {
 			g.forEachNeighbour(x, y, func(x, y int) {
-				g.onPressTile(x, y)
+				if !g.tiles[y][x].marked {
+					g.onPressTile(x, y, false)
+				}
 			})
+		}
+	} else {
+		if long {
+			g.tiles[y][x].marked = !g.tiles[y][x].marked
+			g.tiles[y][x].pressed = false
+		} else {
+			g.tiles[y][x].open = true
+			if g.tiles[y][x].number == 0 {
+				g.forEachNeighbour(x, y, func(x, y int) {
+					g.onPressTile(x, y, false)
+				})
+			}
 		}
 	}
 }
@@ -274,6 +290,7 @@ func newGame(c config) *game {
 	g := &game{c: c}
 	g.bombs = g.c.bombs
 	g.time = time.Now().UnixNano()
+	rand.Seed(g.time)
 	g.tiles = make([][]tile, g.c.height)
 	for y := 0; y < g.c.height; y++ {
 		g.tiles[y] = make([]tile, g.c.width)

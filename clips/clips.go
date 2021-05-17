@@ -162,6 +162,11 @@ func (c *Clip) Update() (err error) {
 				c.onPress(-1)
 			}
 		}
+		if c.onLongPress != nil {
+			if inpututil.MouseButtonPressDuration(ebiten.MouseButtonLeft) == 15 {
+				c.onLongPress(-1)
+			}
+		}
 		if c.onRelease != nil {
 			if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 				c.onRelease(-1)
