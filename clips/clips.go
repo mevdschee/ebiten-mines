@@ -163,7 +163,7 @@ func (c *Clip) Update() (err error) {
 			}
 		}
 		if c.onLongPress != nil {
-			if inpututil.MouseButtonPressDuration(ebiten.MouseButtonLeft) == 15 {
+			if inpututil.MouseButtonPressDuration(ebiten.MouseButtonLeft) == ebiten.MaxTPS()/2 {
 				c.onLongPress(-1)
 			}
 		}
