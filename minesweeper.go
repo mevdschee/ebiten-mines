@@ -150,12 +150,12 @@ func (g *game) setHandlers() {
 	})
 	button.OnRelease(func(id int) {
 		if g.button == buttonPressed {
-			g.reset()
+			g.restart()
 		}
 	})
 	button.OnReleaseOutside(func(id int) {
 		if g.button == buttonPressed {
-			g.reset()
+			g.restart()
 		}
 	})
 	icons := g.getClips("icons")
@@ -317,10 +317,10 @@ func newGame(c config) *game {
 	return g
 }
 
-func (g *game) reset() {
+func (g *game) restart() {
+	g.button = buttonPlaying
 	g.bombs = g.c.bombs
 	g.time = time.Now().UnixNano()
-	rand.Seed(g.time)
 	g.tiles = make([][]tile, g.c.height)
 	for y := 0; y < g.c.height; y++ {
 		g.tiles[y] = make([]tile, g.c.width)
@@ -350,10 +350,11 @@ func main() {
 		bombs:   10,
 		holding: 15,
 	})
-	g.reset()
+	g.restart()
 	width, height := g.getSize()
 	ebiten.SetMaxTPS(30)
 	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
+	rand.Seed(g.time)
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatalf("%v\n", err)
 	}
