@@ -67,12 +67,13 @@ type config struct {
 }
 
 type game struct {
-	c      config
-	movie  *movies.Movie
-	button int
-	bombs  int
-	time   int64
-	tiles  [][]tile
+	c        config
+	movie    *movies.Movie
+	button   int
+	bombs    int
+	gameover bool
+	time     int64
+	tiles    [][]tile
 }
 
 type tile struct {
@@ -242,6 +243,7 @@ func (g *game) onPressTile(x, y int, long bool) {
 }
 
 func (g *game) onGameOver(x, y int, lost bool) {
+	g.gameover = true
 	if lost {
 		g.button = buttonLost
 	} else {
@@ -271,27 +273,48 @@ func (g *game) setNumbers() {
 
 func (g *game) setTiles() {
 	icons := g.getClips("icons")
-	for y := 0; y < g.c.height; y++ {
-		for x := 0; x < g.c.width; x++ {
-			icon := iconClosed
-			if g.tiles[y][x].open {
-				if g.tiles[y][x].bomb {
-					icon = iconBomb
+	if g.gameover {
+		for y := 0; y < g.c.height; y++ {
+			for x := 0; x < g.c.width; x++ {
+				icon := iconClosed
+				if g.tiles[y][x].open {
+					if g.tiles[y][x].bomb {
+						icon = iconAnswerIsBomb
+					} else {
+						icon = g.tiles[y][x].number
+					}
 				} else {
-					icon = g.tiles[y][x].number
+					if g.tiles[y][x].marked {
+						if g.tiles[y][x].bomb {
+							icon = iconMarked
+						} else {
+							icon = iconAnswerNoBomb
+						}
+					} else {
+						if g.tiles[y][x].bomb {
+							icon = iconBomb
+						}
+					}
 				}
-			} else {
+				icons[y*g.c.width+x].GotoFrame(icon)
+			}
+		}
+	} else {
+		for y := 0; y < g.c.height; y++ {
+			for x := 0; x < g.c.width; x++ {
+				icon := iconClosed
 				if g.tiles[y][x].pressed {
 					icon = iconEmpty
 				} else {
 					if g.tiles[y][x].marked {
 						icon = iconMarked
-					} else {
-						icon = iconClosed
+					}
+					if g.tiles[y][x].open {
+						icon = g.tiles[y][x].number
 					}
 				}
+				icons[y*g.c.width+x].GotoFrame(icon)
 			}
-			icons[y*g.c.width+x].GotoFrame(icon)
 		}
 	}
 }
@@ -319,6 +342,7 @@ func newGame(c config) *game {
 func (g *game) restart() {
 	g.button = buttonPlaying
 	g.bombs = g.c.bombs
+	g.gameover = false
 	g.time = time.Now().UnixNano()
 	g.tiles = make([][]tile, g.c.height)
 	for y := 0; y < g.c.height; y++ {
@@ -342,7 +366,6 @@ func (g *game) restart() {
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	ebiten.SetWindowTitle("Minesweeper.go")
 	g := newGame(config{
 		scale:   3,
 		width:   9,
@@ -352,6 +375,7 @@ func main() {
 	})
 	g.restart()
 	width, height := g.getSize()
+	ebiten.SetWindowTitle("Minesweeper.go")
 	ebiten.SetMaxTPS(30)
 	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
 	if err := ebiten.RunGame(g); err != nil {
