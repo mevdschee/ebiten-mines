@@ -72,6 +72,7 @@ type game struct {
 	button   int
 	bombs    int
 	gameover bool
+	won      bool
 	time     int64
 	tiles    [][]tile
 }
@@ -164,35 +165,31 @@ func (g *game) setHandlers() {
 		for x := 0; x < g.c.width; x++ {
 			px, py := x, y
 			icons[y*g.c.width+x].OnPress(func(id int) {
-				if g.button == buttonWon || g.button == buttonLost {
-					return
+				if !g.gameover {
+					g.button = buttonEvaluate
+					g.tiles[py][px].pressed = true
 				}
-				g.button = buttonEvaluate
-				g.tiles[py][px].pressed = true
 			})
 			icons[y*g.c.width+x].OnLongPress(func(id int) {
-				if g.button == buttonWon || g.button == buttonLost {
-					return
+				if !g.gameover {
+					g.onPressTile(px, py, true)
+					g.tiles[py][px].pressed = false
 				}
-				g.onPressTile(px, py, true)
-				g.tiles[py][px].pressed = false
 			})
 			icons[y*g.c.width+x].OnRelease(func(id int) {
-				if g.button == buttonWon || g.button == buttonLost {
-					return
+				if !g.gameover {
+					g.button = buttonPlaying
+					if g.tiles[py][px].pressed {
+						g.onPressTile(px, py, false)
+					}
+					g.tiles[py][px].pressed = false
 				}
-				g.button = buttonPlaying
-				if g.tiles[py][px].pressed {
-					g.onPressTile(px, py, false)
-				}
-				g.tiles[py][px].pressed = false
 			})
 			icons[y*g.c.width+x].OnReleaseOutside(func(id int) {
-				if g.button == buttonWon || g.button == buttonLost {
-					return
+				if !g.gameover {
+					g.button = buttonPlaying
+					g.tiles[py][px].pressed = false
 				}
-				g.button = buttonPlaying
-				g.tiles[py][px].pressed = false
 			})
 		}
 	}
@@ -230,7 +227,9 @@ func (g *game) onPressTile(x, y int, long bool) {
 		} else {
 			g.tiles[y][x].open = true
 			if g.tiles[y][x].bomb {
-				g.onGameOver(x, y, true)
+				g.gameover = true
+				g.won = false
+				g.button = buttonLost
 				return
 			}
 			if g.tiles[y][x].number == 0 {
@@ -242,15 +241,6 @@ func (g *game) onPressTile(x, y int, long bool) {
 	}
 }
 
-func (g *game) onGameOver(x, y int, lost bool) {
-	g.gameover = true
-	if lost {
-		g.button = buttonLost
-	} else {
-		g.button = buttonWon
-	}
-}
-
 func (g *game) setButton() {
 	button := g.getClips("button")[0]
 	button.GotoFrame(g.button)
@@ -258,16 +248,52 @@ func (g *game) setButton() {
 
 func (g *game) setNumbers() {
 	bombsDigits := g.getClips("bombs")
-	bombs := g.bombs
+	bombs := g.bombs - g.getMarkedCount()
 	for i := 0; i < 3; i++ {
 		bombsDigits[2-i].GotoFrame(bombs % 10)
 		bombs /= 10
 	}
-	timeDigits := g.getClips("time")
-	time := int((time.Now().UnixNano() - g.time) / 1000000000)
-	for i := 0; i < 3; i++ {
-		timeDigits[2-i].GotoFrame(time % 10)
-		time /= 10
+	if !g.gameover {
+		timeDigits := g.getClips("time")
+		time := int((time.Now().UnixNano() - g.time) / 1000000000)
+		for i := 0; i < 3; i++ {
+			timeDigits[2-i].GotoFrame(time % 10)
+			time /= 10
+		}
+	}
+}
+
+func (g *game) getClosedCount() int {
+	count := 0
+	for y := 0; y < g.c.height; y++ {
+		for x := 0; x < g.c.width; x++ {
+			if !g.tiles[y][x].open {
+				count++
+			}
+		}
+	}
+	return count
+}
+
+func (g *game) getMarkedCount() int {
+	count := 0
+	for y := 0; y < g.c.height; y++ {
+		for x := 0; x < g.c.width; x++ {
+			if g.tiles[y][x].marked {
+				count++
+			}
+		}
+	}
+	return count
+}
+
+func (g *game) markAllClosed() {
+	for y := 0; y < g.c.height; y++ {
+		for x := 0; x < g.c.width; x++ {
+			if !g.tiles[y][x].open {
+				g.tiles[y][x].marked = true
+			}
+		}
 	}
 }
 
@@ -292,7 +318,11 @@ func (g *game) setTiles() {
 						}
 					} else {
 						if g.tiles[y][x].bomb {
-							icon = iconBomb
+							if g.won {
+								icon = iconMarked
+							} else {
+								icon = iconBomb
+							}
 						}
 					}
 				}
@@ -327,6 +357,14 @@ func (g *game) Update() error {
 	g.setButton()
 	g.setNumbers()
 	g.setTiles()
+	if !g.gameover {
+		if g.getClosedCount() == g.bombs {
+			g.markAllClosed()
+			g.gameover = true
+			g.won = true
+			g.button = buttonWon
+		}
+	}
 	return g.movie.Update()
 }
 
