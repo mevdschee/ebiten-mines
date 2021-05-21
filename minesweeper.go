@@ -71,6 +71,7 @@ type game struct {
 	movie  *movies.Movie
 	button int
 	bombs  int
+	closed int
 	state  int
 	time   int64
 	tiles  [][]tile
@@ -249,9 +250,16 @@ func (g *game) onPressTile(x, y int, long bool) {
 		}
 	} else {
 		if long {
-			g.tiles[y][x].marked = !g.tiles[y][x].marked
+			if g.tiles[y][x].marked {
+				g.tiles[y][x].marked = false
+				g.bombs++
+			} else {
+				g.tiles[y][x].marked = true
+				g.bombs--
+			}
 		} else {
 			g.tiles[y][x].open = true
+			g.closed--
 			if g.tiles[y][x].bomb {
 				g.state = stateLost
 				g.button = buttonLost
@@ -273,7 +281,10 @@ func (g *game) setButton() {
 
 func (g *game) setNumbers() {
 	bombsDigits := g.getClips("bombs")
-	bombs := g.bombs - g.getMarkedCount()
+	bombs := g.bombs
+	if g.state == stateWon {
+		bombs = 0
+	}
 	for i := 0; i < 3; i++ {
 		bombsDigits[2-i].GotoFrame(bombs % 10)
 		bombs /= 10
@@ -287,40 +298,6 @@ func (g *game) setNumbers() {
 		for i := 0; i < 3; i++ {
 			timeDigits[2-i].GotoFrame(time % 10)
 			time /= 10
-		}
-	}
-}
-
-func (g *game) getClosedCount() int {
-	count := 0
-	for y := 0; y < g.c.height; y++ {
-		for x := 0; x < g.c.width; x++ {
-			if !g.tiles[y][x].open {
-				count++
-			}
-		}
-	}
-	return count
-}
-
-func (g *game) getMarkedCount() int {
-	count := 0
-	for y := 0; y < g.c.height; y++ {
-		for x := 0; x < g.c.width; x++ {
-			if g.tiles[y][x].marked {
-				count++
-			}
-		}
-	}
-	return count
-}
-
-func (g *game) markAllClosed() {
-	for y := 0; y < g.c.height; y++ {
-		for x := 0; x < g.c.width; x++ {
-			if !g.tiles[y][x].open {
-				g.tiles[y][x].marked = true
-			}
 		}
 	}
 }
@@ -370,6 +347,9 @@ func (g *game) setTiles() {
 						if g.tiles[y][x].pressed {
 							icon = iconEmpty
 						}
+						if g.state == stateWon {
+							icon = iconMarked
+						}
 					}
 				}
 				icons[y*g.c.width+x].GotoFrame(icon)
@@ -390,8 +370,7 @@ func (g *game) Update() error {
 	g.setNumbers()
 	g.setTiles()
 	if g.state == statePlaying {
-		if g.getClosedCount() == g.bombs {
-			g.markAllClosed()
+		if g.closed == g.c.bombs {
 			g.state = stateWon
 			g.button = buttonWon
 		}
@@ -413,6 +392,7 @@ func (g *game) wait() {
 	g.bombs = g.c.bombs
 	g.state = stateWaiting
 	g.time = time.Now().UnixNano()
+	g.closed = g.c.height * g.c.height
 	g.tiles = make([][]tile, g.c.height)
 	for y := 0; y < g.c.height; y++ {
 		g.tiles[y] = make([]tile, g.c.width)
@@ -425,9 +405,13 @@ func (g *game) wait() {
 func (g *game) start(x, y int) {
 	g.state = statePlaying
 	g.time = time.Now().UnixNano()
-	b := g.c.bombs
+	g.placeBombs(x, y, g.bombs)
+}
+
+func (g *game) placeBombs(x, y, bombs int) {
+	b := bombs
 	g.tiles[y][x].bomb = true
-	for b >= 0 {
+	for b > 0 {
 		x, y := rand.Intn(g.c.width), rand.Intn(g.c.height)
 		if !g.tiles[y][x].bomb {
 			g.tiles[y][x].bomb = true
