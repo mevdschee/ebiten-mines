@@ -226,11 +226,10 @@ func (g *game) forEachNeighbour(x, y int, do func(x, y int)) {
 }
 
 func (g *game) onPressTile(x, y int, long bool) {
-	tile := g.tiles[y][x]
-	if !long && tile.marked {
+	if !long && g.tiles[y][x].marked {
 		return
 	}
-	if tile.open {
+	if g.tiles[y][x].open {
 		if long {
 			g.forEachNeighbour(x, y, func(x, y int) {
 				if !g.tiles[y][x].marked {
