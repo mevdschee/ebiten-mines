@@ -4,6 +4,7 @@ TARGET=`basename "$PWD"`
 echo building $TARGET...
 GOOS=js GOARCH=wasm go build -o build/$TARGET.wasm .
 cp $(go env GOROOT)/misc/wasm/wasm_exec.js build
+touch build/favicon.ico
 cat << EOF > build/index.html
 <html>
   <head>
