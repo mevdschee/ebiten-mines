@@ -1,5 +1,7 @@
 # minesweeper.go
 
+![minesweeper development screenshot](screenshot.jpg)
+
 This is written using ebiten v2 in Go:
 
     sudo apt install golang
