@@ -263,6 +263,9 @@ func (g *game) setNumbers() {
 	if !g.gameover {
 		timeDigits := g.getClips("time")
 		time := int((time.Now().UnixNano() - g.time) / 1000000000)
+		if time > 999 {
+			time = 999
+		}
 		for i := 0; i < 3; i++ {
 			timeDigits[2-i].GotoFrame(time % 10)
 			time /= 10
