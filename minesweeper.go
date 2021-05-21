@@ -159,12 +159,12 @@ func (g *game) setHandlers() {
 	})
 	button.OnRelease(func(id int) {
 		if g.button == buttonPressed {
-			g.wait()
+			g.restart()
 		}
 	})
 	button.OnReleaseOutside(func(id int) {
 		if g.button == buttonPressed {
-			g.wait()
+			g.restart()
 		}
 	})
 	icons := g.getClips("icons")
@@ -234,7 +234,9 @@ func (g *game) forEachNeighbour(x, y int, do func(x, y int)) {
 
 func (g *game) onPressTile(x, y int, long bool) {
 	if g.state == stateWaiting {
-		g.start(x, y)
+		g.state = statePlaying
+		g.time = time.Now().UnixNano()
+		g.placeBombs(x, y, g.bombs)
 	}
 	if !long && g.tiles[y][x].marked {
 		return
@@ -387,12 +389,12 @@ func newGame(c config) *game {
 	return g
 }
 
-func (g *game) wait() {
+func (g *game) restart() {
 	g.button = buttonPlaying
 	g.bombs = g.c.bombs
+	g.closed = g.c.height * g.c.height
 	g.state = stateWaiting
 	g.time = time.Now().UnixNano()
-	g.closed = g.c.height * g.c.height
 	g.tiles = make([][]tile, g.c.height)
 	for y := 0; y < g.c.height; y++ {
 		g.tiles[y] = make([]tile, g.c.width)
@@ -400,12 +402,6 @@ func (g *game) wait() {
 			g.tiles[y][x] = tile{}
 		}
 	}
-}
-
-func (g *game) start(x, y int) {
-	g.state = statePlaying
-	g.time = time.Now().UnixNano()
-	g.placeBombs(x, y, g.bombs)
 }
 
 func (g *game) placeBombs(x, y, bombs int) {
@@ -433,7 +429,7 @@ func main() {
 		bombs:   10,
 		holding: 15,
 	})
-	g.wait()
+	g.restart()
 	width, height := g.getSize()
 	ebiten.SetWindowTitle("Minesweeper.go")
 	ebiten.SetMaxTPS(30)
