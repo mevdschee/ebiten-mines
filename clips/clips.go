@@ -123,7 +123,9 @@ func (c *Clip) Draw(screen *ebiten.Image) {
 
 // GotoFrame goes to a frame of the clip
 func (c *Clip) GotoFrame(frame int) {
-	c.frame = frame
+	if frame >= 0 && frame < len(c.frames) {
+		c.frame = frame
+	}
 }
 
 // OnPress sets the click handler function

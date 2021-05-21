@@ -287,8 +287,20 @@ func (g *game) setNumbers() {
 	if g.state == stateWon {
 		bombs = 0
 	}
+	if bombs < -99 {
+		bombs = -99
+	}
+	negative := false
+	if bombs < 0 {
+		negative = true
+		bombs *= -1
+	}
 	for i := 0; i < 3; i++ {
-		bombsDigits[2-i].GotoFrame(bombs % 10)
+		if i == 2 && negative {
+			bombsDigits[2-i].GotoFrame(10)
+		} else {
+			bombsDigits[2-i].GotoFrame(bombs % 10)
+		}
 		bombs /= 10
 	}
 	if g.state == statePlaying || g.state == stateWaiting {
