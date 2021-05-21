@@ -1,5 +1,7 @@
 # minesweeper.go
 
+![minesweeper development screenshot](screenshot.jpg)
+
 This is written using ebiten v2 in Go:
 
     sudo apt install golang
@@ -7,6 +9,10 @@ This is written using ebiten v2 in Go:
 To build/run the code you can execute:
 
     go run minesweeper.go
+
+To build/run the code in your browser (using WASM) you can execute:
+
+    bash build.sh
 
 On Debian/Ubuntu I had to install the following packages:
 
