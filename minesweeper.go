@@ -424,8 +424,8 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	g := newGame(config{
 		scale:   3,
-		width:   9,
-		height:  9,
+		width:   8,
+		height:  8,
 		bombs:   10,
 		holding: 15,
 	})
