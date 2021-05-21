@@ -165,38 +165,45 @@ func (g *game) setHandlers() {
 		for x := 0; x < g.c.width; x++ {
 			px, py := x, y
 			icons[y*g.c.width+x].OnPress(func(id int) {
-				if !g.gameover {
-					g.button = buttonEvaluate
-					g.tiles[py][px].pressed = true
-					if g.tiles[py][px].open {
-						g.forEachNeighbour(px, py, func(x, y int) {
-							if !g.tiles[y][x].marked {
-								g.tiles[y][x].pressed = true
-							}
-						})
-					}
+				if g.gameover {
+					return
+				}
+				if g.tiles[py][px].marked {
+					return
+				}
+				g.button = buttonEvaluate
+				g.tiles[py][px].pressed = true
+				if g.tiles[py][px].open {
+					g.forEachNeighbour(px, py, func(x, y int) {
+						if !g.tiles[y][x].marked {
+							g.tiles[y][x].pressed = true
+						}
+					})
 				}
 			})
 			icons[y*g.c.width+x].OnLongPress(func(id int) {
-				if !g.gameover {
-					g.onPressTile(px, py, true)
-					g.tiles[py][px].pressed = false
+				if g.gameover {
+					return
 				}
+				g.onPressTile(px, py, true)
+				g.tiles[py][px].pressed = false
 			})
 			icons[y*g.c.width+x].OnRelease(func(id int) {
-				if !g.gameover {
-					g.button = buttonPlaying
-					if g.tiles[py][px].pressed {
-						g.onPressTile(px, py, false)
-					}
-					g.tiles[py][px].pressed = false
+				if g.gameover {
+					return
 				}
+				g.button = buttonPlaying
+				if g.tiles[py][px].pressed {
+					g.onPressTile(px, py, false)
+				}
+				g.tiles[py][px].pressed = false
 			})
 			icons[y*g.c.width+x].OnReleaseOutside(func(id int) {
-				if !g.gameover {
-					g.button = buttonPlaying
-					g.tiles[py][px].pressed = false
+				if g.gameover {
+					return
 				}
+				g.button = buttonPlaying
+				g.tiles[py][px].pressed = false
 			})
 		}
 	}
