@@ -168,10 +168,10 @@ func (g *game) setHandlers() {
 				if g.gameover {
 					return
 				}
+				g.button = buttonEvaluate
 				if g.tiles[py][px].marked {
 					return
 				}
-				g.button = buttonEvaluate
 				g.tiles[py][px].pressed = true
 				if g.tiles[py][px].open {
 					g.forEachNeighbour(px, py, func(x, y int) {
@@ -227,6 +227,9 @@ func (g *game) forEachNeighbour(x, y int, do func(x, y int)) {
 
 func (g *game) onPressTile(x, y int, long bool) {
 	tile := g.tiles[y][x]
+	if !long && tile.marked {
+		return
+	}
 	if tile.open {
 		if long {
 			g.forEachNeighbour(x, y, func(x, y int) {
@@ -296,10 +299,8 @@ func (g *game) getMarkedCount() int {
 	count := 0
 	for y := 0; y < g.c.height; y++ {
 		for x := 0; x < g.c.width; x++ {
-			if !g.tiles[y][x].open {
-				if g.tiles[y][x].marked {
-					count++
-				}
+			if g.tiles[y][x].marked {
+				count++
 			}
 		}
 	}
