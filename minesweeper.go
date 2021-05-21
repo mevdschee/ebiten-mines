@@ -168,6 +168,13 @@ func (g *game) setHandlers() {
 				if !g.gameover {
 					g.button = buttonEvaluate
 					g.tiles[py][px].pressed = true
+					if g.tiles[py][px].open {
+						g.forEachNeighbour(px, py, func(x, y int) {
+							if !g.tiles[y][x].marked {
+								g.tiles[y][x].pressed = true
+							}
+						})
+					}
 				}
 			})
 			icons[y*g.c.width+x].OnLongPress(func(id int) {
@@ -333,14 +340,15 @@ func (g *game) setTiles() {
 		for y := 0; y < g.c.height; y++ {
 			for x := 0; x < g.c.width; x++ {
 				icon := iconClosed
-				if g.tiles[y][x].pressed {
-					icon = iconEmpty
+				if g.tiles[y][x].open {
+					icon = g.tiles[y][x].number
 				} else {
 					if g.tiles[y][x].marked {
 						icon = iconMarked
-					}
-					if g.tiles[y][x].open {
-						icon = g.tiles[y][x].number
+					} else {
+						if g.tiles[y][x].pressed {
+							icon = iconEmpty
+						}
 					}
 				}
 				icons[y*g.c.width+x].GotoFrame(icon)
