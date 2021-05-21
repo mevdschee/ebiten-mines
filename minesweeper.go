@@ -296,8 +296,10 @@ func (g *game) getMarkedCount() int {
 	count := 0
 	for y := 0; y < g.c.height; y++ {
 		for x := 0; x < g.c.width; x++ {
-			if g.tiles[y][x].marked {
-				count++
+			if !g.tiles[y][x].open {
+				if g.tiles[y][x].marked {
+					count++
+				}
 			}
 		}
 	}
