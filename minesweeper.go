@@ -423,7 +423,7 @@ func (g *game) placeBombs(x, y, bombs int) {
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	g := newGame(config{
-		scale:   1,
+		scale:   3,
 		width:   8,
 		height:  8,
 		bombs:   10,
