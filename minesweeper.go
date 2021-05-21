@@ -67,14 +67,13 @@ type config struct {
 }
 
 type game struct {
-	c        config
-	movie    *movies.Movie
-	button   int
-	bombs    int
-	gameover bool
-	won      bool
-	time     int64
-	tiles    [][]tile
+	c      config
+	movie  *movies.Movie
+	button int
+	bombs  int
+	state  int
+	time   int64
+	tiles  [][]tile
 }
 
 type tile struct {
@@ -84,6 +83,13 @@ type tile struct {
 	pressed bool
 	number  int
 }
+
+const (
+	stateWaiting = iota
+	statePlaying
+	stateWon
+	stateLost
+)
 
 const (
 	buttonPlaying = iota
@@ -152,12 +158,12 @@ func (g *game) setHandlers() {
 	})
 	button.OnRelease(func(id int) {
 		if g.button == buttonPressed {
-			g.restart()
+			g.wait()
 		}
 	})
 	button.OnReleaseOutside(func(id int) {
 		if g.button == buttonPressed {
-			g.restart()
+			g.wait()
 		}
 	})
 	icons := g.getClips("icons")
@@ -165,7 +171,7 @@ func (g *game) setHandlers() {
 		for x := 0; x < g.c.width; x++ {
 			px, py := x, y
 			icons[y*g.c.width+x].OnPress(func(id int) {
-				if g.gameover {
+				if g.state == stateWon || g.state == stateLost {
 					return
 				}
 				g.button = buttonEvaluate
@@ -182,14 +188,14 @@ func (g *game) setHandlers() {
 				}
 			})
 			icons[y*g.c.width+x].OnLongPress(func(id int) {
-				if g.gameover {
+				if g.state == stateWon || g.state == stateLost {
 					return
 				}
 				g.onPressTile(px, py, true)
 				g.tiles[py][px].pressed = false
 			})
 			icons[y*g.c.width+x].OnRelease(func(id int) {
-				if g.gameover {
+				if g.state == stateWon || g.state == stateLost {
 					return
 				}
 				g.button = buttonPlaying
@@ -199,7 +205,7 @@ func (g *game) setHandlers() {
 				g.tiles[py][px].pressed = false
 			})
 			icons[y*g.c.width+x].OnReleaseOutside(func(id int) {
-				if g.gameover {
+				if g.state == stateWon || g.state == stateLost {
 					return
 				}
 				g.button = buttonPlaying
@@ -226,9 +232,13 @@ func (g *game) forEachNeighbour(x, y int, do func(x, y int)) {
 }
 
 func (g *game) onPressTile(x, y int, long bool) {
+	if g.state == stateWaiting {
+		g.start(x, y)
+	}
 	if !long && g.tiles[y][x].marked {
 		return
 	}
+	g.state = statePlaying
 	if g.tiles[y][x].open {
 		if long {
 			g.forEachNeighbour(x, y, func(x, y int) {
@@ -243,8 +253,7 @@ func (g *game) onPressTile(x, y int, long bool) {
 		} else {
 			g.tiles[y][x].open = true
 			if g.tiles[y][x].bomb {
-				g.gameover = true
-				g.won = false
+				g.state = stateLost
 				g.button = buttonLost
 				return
 			}
@@ -269,12 +278,12 @@ func (g *game) setNumbers() {
 		bombsDigits[2-i].GotoFrame(bombs % 10)
 		bombs /= 10
 	}
-	if !g.gameover {
-		timeDigits := g.getClips("time")
+	if g.state == statePlaying || g.state == stateWaiting {
 		time := int((time.Now().UnixNano() - g.time) / 1000000000)
 		if time > 999 {
 			time = 999
 		}
+		timeDigits := g.getClips("time")
 		for i := 0; i < 3; i++ {
 			timeDigits[2-i].GotoFrame(time % 10)
 			time /= 10
@@ -318,7 +327,7 @@ func (g *game) markAllClosed() {
 
 func (g *game) setTiles() {
 	icons := g.getClips("icons")
-	if g.gameover {
+	if g.state == stateWon || g.state == stateLost {
 		for y := 0; y < g.c.height; y++ {
 			for x := 0; x < g.c.width; x++ {
 				icon := iconClosed
@@ -337,7 +346,7 @@ func (g *game) setTiles() {
 						}
 					} else {
 						if g.tiles[y][x].bomb {
-							if g.won {
+							if g.state == stateWon {
 								icon = iconMarked
 							} else {
 								icon = iconBomb
@@ -374,14 +383,16 @@ func (g *game) Update() error {
 		g.init()
 		g.setHandlers()
 	}
+	if g.state == stateWaiting {
+		g.time = time.Now().UnixNano()
+	}
 	g.setButton()
 	g.setNumbers()
 	g.setTiles()
-	if !g.gameover {
+	if g.state == statePlaying {
 		if g.getClosedCount() == g.bombs {
 			g.markAllClosed()
-			g.gameover = true
-			g.won = true
+			g.state = stateWon
 			g.button = buttonWon
 		}
 	}
@@ -397,10 +408,10 @@ func newGame(c config) *game {
 	return g
 }
 
-func (g *game) restart() {
+func (g *game) wait() {
 	g.button = buttonPlaying
 	g.bombs = g.c.bombs
-	g.gameover = false
+	g.state = stateWaiting
 	g.time = time.Now().UnixNano()
 	g.tiles = make([][]tile, g.c.height)
 	for y := 0; y < g.c.height; y++ {
@@ -409,8 +420,14 @@ func (g *game) restart() {
 			g.tiles[y][x] = tile{}
 		}
 	}
+}
+
+func (g *game) start(x, y int) {
+	g.state = statePlaying
+	g.time = time.Now().UnixNano()
 	b := g.c.bombs
-	for b > 0 {
+	g.tiles[y][x].bomb = true
+	for b >= 0 {
 		x, y := rand.Intn(g.c.width), rand.Intn(g.c.height)
 		if !g.tiles[y][x].bomb {
 			g.tiles[y][x].bomb = true
@@ -420,18 +437,19 @@ func (g *game) restart() {
 			})
 		}
 	}
+	g.tiles[y][x].bomb = false
 }
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	g := newGame(config{
-		scale:   1,
+		scale:   3,
 		width:   8,
 		height:  8,
 		bombs:   10,
 		holding: 15,
 	})
-	g.restart()
+	g.wait()
 	width, height := g.getSize()
 	ebiten.SetWindowTitle("Minesweeper.go")
 	ebiten.SetMaxTPS(30)
