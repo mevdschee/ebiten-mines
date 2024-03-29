@@ -22,15 +22,6 @@ type SceneJSON struct {
 	Layers []layers.LayerJSON
 }
 
-var (
-	currentScene *Scene
-	allScenes    map[string]*Scene
-)
-
-func init() {
-	allScenes = map[string]*Scene{}
-}
-
 // GetName gets the name of the scene
 func (s *Scene) GetName() string {
 	return s.name
