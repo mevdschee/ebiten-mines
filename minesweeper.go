@@ -55,7 +55,7 @@ const movieScenes = `
 		{"sprite":"digits","name":"bombs","repeat":"3","x":"18+i*13","y":"17"},
 		{"sprite":"digits","name":"time","repeat":"3","x":"w*16-31+i*13","y":"17"},
 		{"sprite":"buttons","name":"button","x":"(w*16)/2-1","y":"15"},
-		{"sprite":"icons","name":"icons","repeat":"w*h","x":"12+(i%w)*16","y":"55+(i/w)*16"}
+		{"sprite":"icons","name":"icons","repeat":"w*h","x":"12+(i%w)*16","y":"55+floor(i/w)*16"}
 	]}]}]`
 
 type config struct {

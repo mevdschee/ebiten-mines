@@ -3,7 +3,7 @@ package layers
 import (
 	"fmt"
 
-	"github.com/antonmedv/expr"
+	"github.com/expr-lang/expr"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mevdschee/minesweeper.go/clips"
 	"github.com/mevdschee/minesweeper.go/sprites"
@@ -38,7 +38,8 @@ func eval(expression string, parameters map[string]interface{}) (int, error) {
 	if len(expression) == 0 {
 		return 0, nil
 	}
-	value, err := expr.Eval(expression, parameters)
+	prog, _ := expr.Compile(expression, expr.AsInt())
+	value, err := expr.Run(prog, parameters)
 	if err != nil {
 		return 0, err
 	}
