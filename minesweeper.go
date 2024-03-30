@@ -154,15 +154,15 @@ func (g *game) getClips(clip string) []*clips.Clip {
 
 func (g *game) setHandlers() {
 	button := g.getClips("button")[0]
-	button.OnPress(func(id int) {
+	button.OnPress(func() {
 		g.button = buttonPressed
 	})
-	button.OnRelease(func(id int) {
+	button.OnRelease(func() {
 		if g.button == buttonPressed {
 			g.restart()
 		}
 	})
-	button.OnReleaseOutside(func(id int) {
+	button.OnReleaseOutside(func() {
 		if g.button == buttonPressed {
 			g.restart()
 		}
@@ -171,7 +171,7 @@ func (g *game) setHandlers() {
 	for y := 0; y < g.c.height; y++ {
 		for x := 0; x < g.c.width; x++ {
 			px, py := x, y
-			icons[y*g.c.width+x].OnPress(func(id int) {
+			icons[y*g.c.width+x].OnPress(func() {
 				if g.state == stateWon || g.state == stateLost {
 					return
 				}
@@ -188,14 +188,14 @@ func (g *game) setHandlers() {
 					})
 				}
 			})
-			icons[y*g.c.width+x].OnLongPress(func(id int) {
+			icons[y*g.c.width+x].OnLongPress(func() {
 				if g.state == stateWon || g.state == stateLost {
 					return
 				}
 				g.onPressTile(px, py, true)
 				g.tiles[py][px].pressed = false
 			})
-			icons[y*g.c.width+x].OnRelease(func(id int) {
+			icons[y*g.c.width+x].OnRelease(func() {
 				if g.state == stateWon || g.state == stateLost {
 					return
 				}
@@ -205,7 +205,7 @@ func (g *game) setHandlers() {
 				}
 				g.tiles[py][px].pressed = false
 			})
-			icons[y*g.c.width+x].OnReleaseOutside(func(id int) {
+			icons[y*g.c.width+x].OnReleaseOutside(func() {
 				if g.state == stateWon || g.state == stateLost {
 					return
 				}

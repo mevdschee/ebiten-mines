@@ -8,8 +8,6 @@ import (
 	"github.com/mevdschee/minesweeper.go/sprites"
 )
 
-type InputHandlerFunc func(id int)
-
 // Clip is a set of frames
 type Clip struct {
 	name             string
@@ -17,10 +15,10 @@ type Clip struct {
 	width, height    int
 	frame            int
 	frames           []*ebiten.Image
-	onPress          InputHandlerFunc
-	onLongPress      InputHandlerFunc
-	onRelease        InputHandlerFunc
-	onReleaseOutside InputHandlerFunc
+	onPress          func()
+	onLongPress      func()
+	onRelease        func()
+	onReleaseOutside func()
 }
 
 // ClipJSON is a clip in JSON
@@ -129,22 +127,22 @@ func (c *Clip) GotoFrame(frame int) {
 }
 
 // OnPress sets the click handler function
-func (c *Clip) OnPress(handler InputHandlerFunc) {
+func (c *Clip) OnPress(handler func()) {
 	c.onPress = handler
 }
 
 // OnLongPress sets the click handler function
-func (c *Clip) OnLongPress(handler InputHandlerFunc) {
+func (c *Clip) OnLongPress(handler func()) {
 	c.onLongPress = handler
 }
 
 // OnRelease sets the click handler function
-func (c *Clip) OnRelease(handler InputHandlerFunc) {
+func (c *Clip) OnRelease(handler func()) {
 	c.onRelease = handler
 }
 
 // OnReleaseOutside sets the click handler function
-func (c *Clip) OnReleaseOutside(handler InputHandlerFunc) {
+func (c *Clip) OnReleaseOutside(handler func()) {
 	c.onReleaseOutside = handler
 }
 
@@ -161,22 +159,22 @@ func (c *Clip) Update() (err error) {
 	hover := c.IsHovered()
 	if c.onPress != nil {
 		if hover && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-			c.onPress(-1)
+			c.onPress()
 		}
 	}
 	if c.onLongPress != nil {
 		if hover && inpututil.MouseButtonPressDuration(ebiten.MouseButtonLeft) == ebiten.MaxTPS()/2 {
-			c.onLongPress(-1)
+			c.onLongPress()
 		}
 	}
 	if c.onRelease != nil {
 		if hover && inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-			c.onRelease(-1)
+			c.onRelease()
 		}
 	}
 	if c.onReleaseOutside != nil {
 		if !hover && inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-			c.onReleaseOutside(-1)
+			c.onReleaseOutside()
 		}
 	}
 	return nil
