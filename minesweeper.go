@@ -417,10 +417,11 @@ func (g *game) restart() {
 }
 
 func (g *game) placeBombs(x, y, bombs int) {
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	b := bombs
 	g.tiles[y][x].bomb = true
 	for b > 0 {
-		x, y := rand.Intn(g.c.width), rand.Intn(g.c.height)
+		x, y := rng.Intn(g.c.width), rng.Intn(g.c.height)
 		if !g.tiles[y][x].bomb {
 			g.tiles[y][x].bomb = true
 			b--
@@ -433,7 +434,6 @@ func (g *game) placeBombs(x, y, bombs int) {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	g := newGame(config{
 		scale:   3,
 		width:   8,
