@@ -241,14 +241,21 @@ func (g *game) onPressTile(x, y int, long bool) {
 	if !long && g.tiles[y][x].marked {
 		return
 	}
-	g.state = statePlaying
 	if g.tiles[y][x].open {
 		if long {
+			var marked = 0
 			g.forEachNeighbour(x, y, func(x, y int) {
-				if !g.tiles[y][x].marked {
-					g.onPressTile(x, y, false)
+				if g.tiles[y][x].marked {
+					marked++
 				}
 			})
+			if g.tiles[y][x].number == marked {
+				g.forEachNeighbour(x, y, func(x, y int) {
+					if !g.tiles[y][x].marked {
+						g.onPressTile(x, y, false)
+					}
+				})
+			}
 		}
 	} else {
 		if long {
