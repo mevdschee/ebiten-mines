@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image"
 	"log"
 	"math/rand"
 	"time"
@@ -37,6 +38,24 @@ var spriteMapImage = `
 	p0bUFifmUbna708S0fmZPW9E97jXZsmjkwW9ZvZ/GtFc9WhaHrlNO61me5t2wltEQHqv3Z/idtZe
 	m/Km5Yj2eotMAM0b0epxekTtMjIR5MrIVJDN7FfQHwLik+5B/h6aApID/QygcibQv7SdAex29G+U
 	AAAAAElFTkSuQmCC`
+
+var minesIconImage = `
+	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABhGlDQ1BJQ0MgcHJvZmlsZQAAKJF9
+	kT1Iw0AcxV9TRZGKBTuIKGSoThZERRy1CkWoEGqFVh1MLv2CJg1Jiouj4Fpw8GOx6uDirKuDqyAI
+	foA4OzgpukiJ/0sKLWI8OO7Hu3uPu3eAUC8zzeoYBzTdNlOJuJjJropdrwhiGGHEEJaZZcxJUhK+
+	4+seAb7exXiW/7k/R6+asxgQEIlnmWHaxBvE05u2wXmfOMKKskp8Tjxm0gWJH7muePzGueCywDMj
+	Zjo1TxwhFgttrLQxK5oa8RRxVNV0yhcyHquctzhr5Spr3pO/MJTTV5a5TnMICSxiCRJEKKiihDJs
+	6qsEnRQLKdqP+/gHXb9ELoVcJTByLKACDbLrB/+D391a+ckJLykUBzpfHOdjBOjaBRo1x/k+dpzG
+	CRB8Bq70lr9SB2Y+Sa+1tOgR0LcNXFy3NGUPuNwBBp4M2ZRdKUhTyOeB9zP6pizQfwv0rHm9Nfdx
+	+gCkqavkDXBwCIwWKHvd593d7b39e6bZ3w+E1HKu1lOIkQAAAAZiS0dEAP8A/wD/oL2nkwAAAAlw
+	SFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+gDHRAzMWqDAKcAAAFUSURBVFjD7VdtjsQgCIXJ3guP
+	hjfDk739MzWUqrW2u5tNhoTUlqnv8eVQoo/cE7x1WV53wAF4Ir9O4BHhxbA/tidPALG/d2GvUkqp
+	65QStd67SgzvHMOvvZhZd21maO3RAvoahoeZvNfeUzMjEanPcs7e+8Meyynw4CIyBNuIbbbwG75M
+	IObbR6AnZlbBZwictmEppaoH2YDivao+cg7svI9gM0RSSpEMrqQAAHZ5L6V08zvyOtj4LAK1XXzI
+	c86HIgNAAEhVmwQ6pA7t+Ipeb6EXERKRWvE+1CNP/TWScM8wYgciah4uqgpVBRHt1l69PdqCHiLA
+	vS5oedsL/YzdY/HoEOpV/1nxDcD50jkQQWOeF72/9ofUynmvDk7yvjxuNUEWSNya+bpEJnV5egE9
+	I7wyE+KJQhodPLMj2Y/On7Mp4MWhdGkeXGrTf/td8OefZh/5BlZ4hlUqnjswAAAAAElFTkSuQmCC
+	`
 
 const spriteMapMeta = `
 	[{"name":"display","x":28,"y":82,"width":41,"height":25,"count":1},
@@ -444,7 +463,7 @@ func (g *game) placeBombs(x, y, bombs int) {
 
 func main() {
 	g := newGame(config{
-		scale:   1,
+		scale:   4,
 		width:   8,
 		height:  8,
 		bombs:   10,
@@ -455,6 +474,10 @@ func main() {
 	ebiten.SetWindowTitle("Minesweeper.go")
 	ebiten.SetTPS(30)
 	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
+	icon, err := sprites.LoadImageFromString(minesIconImage)
+	if err == nil {
+		ebiten.SetWindowIcon([]image.Image{icon})
+	}
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatalf("%v\n", err)
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"image"
 	"image/png"
 	"strings"
 
@@ -28,7 +29,7 @@ type Sprite struct {
 	Gap     int           `json:"gap,omitempty"`
 }
 
-func loadImageFromString(b64 string) (*ebiten.Image, error) {
+func LoadImageFromString(b64 string) (image.Image, error) {
 	b64 = strings.ReplaceAll(b64, "\n", "")
 	b64 = strings.ReplaceAll(b64, "\t", "")
 	b64 = strings.ReplaceAll(b64, " ", "")
@@ -40,16 +41,16 @@ func loadImageFromString(b64 string) (*ebiten.Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	img2 := ebiten.NewImageFromImage(img)
-	return img2, err
+	return img, nil
 }
 
 // NewSpriteMap creates a new sprite map
 func NewSpriteMap(base64image, jsondata string) (SpriteMap, error) {
-	image, err := loadImageFromString(base64image)
+	img, err := LoadImageFromString(base64image)
 	if err != nil {
 		return nil, err
 	}
+	image := ebiten.NewImageFromImage(img)
 	sprites := []*Sprite{}
 	spriteMap := SpriteMap{}
 	err = json.Unmarshal([]byte(jsondata), &sprites)
