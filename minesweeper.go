@@ -444,7 +444,7 @@ func (g *game) placeBombs(x, y, bombs int) {
 
 func main() {
 	g := newGame(config{
-		scale:   2,
+		scale:   1,
 		width:   30,
 		height:  16,
 		bombs:   99,
@@ -453,7 +453,7 @@ func main() {
 	g.restart()
 	width, height := g.getSize()
 	ebiten.SetWindowTitle("Minesweeper.go")
-	ebiten.SetMaxTPS(30)
+	ebiten.SetTPS(30)
 	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatalf("%v\n", err)
