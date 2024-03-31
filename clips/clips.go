@@ -2,10 +2,12 @@ package clips
 
 import (
 	"image"
+	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/mevdschee/minesweeper.go/sprites"
+	"github.com/mevdschee/minesweeper.go/touch"
 )
 
 // Clip is a set of frames
@@ -154,9 +156,26 @@ func (c *Clip) IsHovered() bool {
 	return cursor.In(rect)
 }
 
+// IsTouched returns whether or not the touch hits the clip
+func (c *Clip) IsTouched(touchID ebiten.TouchID) bool {
+	cursorX, cursorY := ebiten.TouchPosition(touchID)
+	cursor := image.Point{cursorX, cursorY}
+	rect := image.Rect(c.x, c.y, c.x+c.width, c.y+c.height)
+	return cursor.In(rect)
+}
+
+// IsTouched returns whether or not the touch hits the clip
+func (c *Clip) IsTouchedPreviously(touchID ebiten.TouchID) bool {
+	cursorX, cursorY := inpututil.TouchPositionInPreviousTick(touchID)
+	cursor := image.Point{cursorX, cursorY}
+	rect := image.Rect(c.x, c.y, c.x+c.width, c.y+c.height)
+	return cursor.In(rect)
+}
+
 // Update updates the clip
 func (c *Clip) Update() (err error) {
 	hover := c.IsHovered()
+
 	if c.onPress != nil {
 		if hover && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 			c.onPress()
@@ -175,6 +194,28 @@ func (c *Clip) Update() (err error) {
 	if c.onReleaseOutside != nil {
 		if !hover && inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 			c.onReleaseOutside()
+		}
+	}
+	touchIDs := touch.GetTouchIDs()
+	for i := 0; i < len(touchIDs); i++ {
+		touchID := touchIDs[i]
+		touched := c.IsTouched(touchID)
+		touchedPreviously := c.IsTouchedPreviously(touchID)
+		if touched {
+			log.Printf("touched %v %v %v", c.name, touchID, touch.IsTouchJustReleased(touchID))
+		}
+		if touchedPreviously {
+			log.Printf("touchedPreviously %v %v %v", c.name, touchID, touch.IsTouchJustReleased(touchID))
+		}
+		if c.onPress != nil {
+			if touched && touch.IsTouchJustPressed(touchID) {
+				c.onPress()
+			}
+		}
+		if c.onRelease != nil {
+			if touchedPreviously && touch.IsTouchJustReleased(touchID) {
+				c.onRelease()
+			}
 		}
 	}
 	return nil

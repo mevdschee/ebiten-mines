@@ -9,6 +9,7 @@ import (
 	"github.com/mevdschee/minesweeper.go/clips"
 	"github.com/mevdschee/minesweeper.go/movies"
 	"github.com/mevdschee/minesweeper.go/sprites"
+	"github.com/mevdschee/minesweeper.go/touch"
 )
 
 var spriteMapImage = `
@@ -396,6 +397,7 @@ func (g *game) Update() error {
 			g.button = buttonWon
 		}
 	}
+	touch.UpdateTouchIDs()
 	return g.movie.Update()
 }
 
