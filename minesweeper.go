@@ -411,7 +411,7 @@ func newGame(c config) *game {
 func (g *game) restart() {
 	g.button = buttonPlaying
 	g.bombs = g.c.bombs
-	g.closed = g.c.height * g.c.height
+	g.closed = g.c.width * g.c.height
 	g.state = stateWaiting
 	g.time = time.Now().UnixNano()
 	g.tiles = make([][]tile, g.c.height)
