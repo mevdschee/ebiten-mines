@@ -2,7 +2,6 @@ package clips
 
 import (
 	"image"
-	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -182,7 +181,7 @@ func (c *Clip) Update() (err error) {
 		}
 	}
 	if c.onLongPress != nil {
-		if hover && inpututil.MouseButtonPressDuration(ebiten.MouseButtonLeft) == ebiten.MaxTPS()/2 {
+		if hover && inpututil.MouseButtonPressDuration(ebiten.MouseButtonLeft) == ebiten.TPS()/2 {
 			c.onLongPress()
 		}
 	}
@@ -201,20 +200,24 @@ func (c *Clip) Update() (err error) {
 		touchID := touchIDs[i]
 		touched := c.IsTouched(touchID)
 		touchedPreviously := c.IsTouchedPreviously(touchID)
-		if touched {
-			log.Printf("touched %v %v %v", c.name, touchID, touch.IsTouchJustReleased(touchID))
-		}
-		if touchedPreviously {
-			log.Printf("touchedPreviously %v %v %v", c.name, touchID, touch.IsTouchJustReleased(touchID))
-		}
 		if c.onPress != nil {
 			if touched && touch.IsTouchJustPressed(touchID) {
 				c.onPress()
 			}
 		}
+		if c.onLongPress != nil {
+			if touched && inpututil.TouchPressDuration(touchID) == ebiten.TPS()/2 {
+				c.onLongPress()
+			}
+		}
 		if c.onRelease != nil {
 			if touchedPreviously && touch.IsTouchJustReleased(touchID) {
 				c.onRelease()
+			}
+		}
+		if c.onReleaseOutside != nil {
+			if !touchedPreviously && inpututil.IsTouchJustReleased(touchID) {
+				c.onReleaseOutside()
 			}
 		}
 	}
