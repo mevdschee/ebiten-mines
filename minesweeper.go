@@ -442,10 +442,10 @@ func (g *game) placeBombs(x, y, bombs int) {
 
 func main() {
 	g := newGame(config{
-		scale:   3,
-		width:   8,
-		height:  8,
-		bombs:   10,
+		scale:   1,
+		width:   30,
+		height:  16,
+		bombs:   99,
 		holding: 15,
 	})
 	g.restart()
