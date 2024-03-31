@@ -1,6 +1,6 @@
 module github.com/mevdschee/minesweeper.go
 
-go 1.20
+go 1.18
 
 require (
 	github.com/expr-lang/expr v1.16.3
