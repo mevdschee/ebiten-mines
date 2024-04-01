@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
 	"image"
+	"image/png"
 	"log"
 	"math/rand"
 	"time"
@@ -13,49 +16,11 @@ import (
 	"github.com/mevdschee/minesweeper.go/touch"
 )
 
-var spriteMapImage = `
-	iVBORw0KGgoAAAANSUhEUgAAAJAAAAB6BAMAAACit8dvAAAAMFBMVEUAAACAAAAAgACAgAAAAICA
-	AIAAgIDAwMCAgID/AAAA/wD//wAAAP//AP8A//////9PEyZJAAAEtklEQVRo3u2YO2/bSBCARxVB
-	s+FVAVymSeverYH8k6RlAiNLGQGcToqaUyfQTUoJacyef8H/R8A1unnsi7skQ4vM4QJ7JSw5D36a
-	3Z0dLgTrmRqslLSp198DeuLrW2x4XVbYSL69ub3B66e/sL1B+QM2lAvAlqBMA2uDvjLoM4HeadAu
-	Bn0JQCWBVi3QkwYpRSBSMujmvQaJ35cPbkgCUqoN+iogEqaB9NCI85avMke3N9je66EpNzT0K0AN
-	zBFx3vWBzBx9HANijjc0pXhoJAtIKQ3CkQ0M7TNzpoBwsp+6ll+D4qHRyLqWvwukApByCWlAHXP0
-	P9xrk0AnacewvozV/9TNgMrwF0L990paqHcgkdc+KCGQp080KCVQ4D8GtNyRviJ5ufNAAONACZaZ
-	BEHLikHLHcoVRpQCpCmCiqRI2L+gzB4AUcWiiCoBqQoBOwRtUV/5IMDPEAhOVPlsRCr9AVWCINKn
-	PEfPBOk5UlCl2zbIztEgCLglJ5n09YqeRvm76NMTByT+xfAcSVG3IEUgjgh0RBYEahxIL7MdmgFZ
-	/1+AzKrRg6RfbqFS3qq5iEbmkQGZ5Td5NHpowRbBtUtU1blFWiCzjUOQ1QdbJPS3oLIDRC3Um91f
-	9oF+ztSAwq0uIMd2Ifd9mrgXHw3aomb7kC8WC3jI5Z77LWvYeim91ns9P3WpQTSD6cMC4djLPfcV
-	a8i6uJBe672enlqYiCjPqoc8D3vRU59fSh/qxTO/bIEWEPbuAYyI+1Avni8iIioOzG73le0xIjAR
-	+fq0HZHkS0ceud7kkcssk0es1yDJzvF5HOs7IvIzOI7OjyiPI6qCeTFzEc9XfN+7av7qxCsY3/fm
-	kZ8vcU7F9y8mIq8e+XXHr1Chj61cfj2KcsTkkZfrvXnkV8jxNbtPM/dbxD/6rg6+dDfWJKC/T66V
-	B084bgZMraN3BDqufe9yM2BaK9dKDTo6DXo7+3ozYPrtoIKOVtabDmwW1G3qARVZ04D1hqapEwPq
-	MQlIsB4InZsm0d4FCbUB9ZgYpLEOxHZ0EG9+FJ9lUJ+JQAbrQGJvEvYumqtr/NYCyuq6wa8xaayA
-	DNYHQVNn1htQzgyoQXfPhC3TIIu1INQwqGbvTCJqEgIVjUSkTTUAfsnEoJojaIGErUF6oAJqmTIC
-	ZZmAMgFhtM8GQXOFj17XBmSmthdUQ09E7jd6QDX5Ou+r+tqBaFJGgsKlaUjuXrWaf1BpEKGyNoh/
-	1oIoIptHHKw14eo3dvk1tj+zaY5+ndkWO3mvxZl95u6P99q59Sja/WdXyHY9Kr33wcH/c2YzYOqo
-	kCv/xXLwH90MmDpAvn2994XNWNPMr2x55T0+8uWu67/zu7tng46bbxC3f54fUYkgOqnggY5OPnKY
-	Hw3iZNnvJT++8dkpp6MYdSycB+LTHBACchDhzIjofEkYIBQL50aECHycJghE+KMjwr19WM0REYHu
-	p0bUFifmUbna708S0fmZPW9E97jXZsmjkwW9ZvZ/GtFc9WhaHrlNO61me5t2wltEQHqv3Z/idtZe
-	m/Km5Yj2eotMAM0b0epxekTtMjIR5MrIVJDN7FfQHwLik+5B/h6aApID/QygcibQv7SdAex29G+U
-	AAAAAElFTkSuQmCC`
+//go:embed winxpskin.png
+var spriteMapImage []byte
 
-var minesIconImage = `
-	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABhGlDQ1BJQ0MgcHJvZmlsZQAAKJF9
-	kT1Iw0AcxV9TRZGKBTuIKGSoThZERRy1CkWoEGqFVh1MLv2CJg1Jiouj4Fpw8GOx6uDirKuDqyAI
-	foA4OzgpukiJ/0sKLWI8OO7Hu3uPu3eAUC8zzeoYBzTdNlOJuJjJropdrwhiGGHEEJaZZcxJUhK+
-	4+seAb7exXiW/7k/R6+asxgQEIlnmWHaxBvE05u2wXmfOMKKskp8Tjxm0gWJH7muePzGueCywDMj
-	Zjo1TxwhFgttrLQxK5oa8RRxVNV0yhcyHquctzhr5Spr3pO/MJTTV5a5TnMICSxiCRJEKKiihDJs
-	6qsEnRQLKdqP+/gHXb9ELoVcJTByLKACDbLrB/+D391a+ckJLykUBzpfHOdjBOjaBRo1x/k+dpzG
-	CRB8Bq70lr9SB2Y+Sa+1tOgR0LcNXFy3NGUPuNwBBp4M2ZRdKUhTyOeB9zP6pizQfwv0rHm9Nfdx
-	+gCkqavkDXBwCIwWKHvd593d7b39e6bZ3w+E1HKu1lOIkQAAAAZiS0dEAP8A/wD/oL2nkwAAAAlw
-	SFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+gDHRAzMWqDAKcAAAFUSURBVFjD7VdtjsQgCIXJ3guP
-	hjfDk739MzWUqrW2u5tNhoTUlqnv8eVQoo/cE7x1WV53wAF4Ir9O4BHhxbA/tidPALG/d2GvUkqp
-	65QStd67SgzvHMOvvZhZd21maO3RAvoahoeZvNfeUzMjEanPcs7e+8Meyynw4CIyBNuIbbbwG75M
-	IObbR6AnZlbBZwictmEppaoH2YDivao+cg7svI9gM0RSSpEMrqQAAHZ5L6V08zvyOtj4LAK1XXzI
-	c86HIgNAAEhVmwQ6pA7t+Ipeb6EXERKRWvE+1CNP/TWScM8wYgciah4uqgpVBRHt1l69PdqCHiLA
-	vS5oedsL/YzdY/HoEOpV/1nxDcD50jkQQWOeF72/9ofUynmvDk7yvjxuNUEWSNya+bpEJnV5egE9
-	I7wyE+KJQhodPLMj2Y/On7Mp4MWhdGkeXGrTf/td8OefZh/5BlZ4hlUqnjswAAAAAElFTkSuQmCC
-	`
+//go:embed minesicon.png
+var minesIconImage []byte
 
 const spriteMapMeta = `
 	[{"name":"display","x":28,"y":82,"width":41,"height":25,"count":1},
@@ -474,7 +439,7 @@ func main() {
 	ebiten.SetWindowTitle("Minesweeper.go")
 	ebiten.SetTPS(30)
 	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
-	icon, err := sprites.LoadImageFromString(minesIconImage)
+	icon, err := png.Decode(bytes.NewReader(minesIconImage))
 	if err == nil {
 		ebiten.SetWindowIcon([]image.Image{icon})
 	}

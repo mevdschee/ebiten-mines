@@ -2,11 +2,8 @@ package sprites
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
-	"image"
 	"image/png"
-	"strings"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -29,24 +26,9 @@ type Sprite struct {
 	Gap     int           `json:"gap,omitempty"`
 }
 
-func LoadImageFromString(b64 string) (image.Image, error) {
-	b64 = strings.ReplaceAll(b64, "\n", "")
-	b64 = strings.ReplaceAll(b64, "\t", "")
-	b64 = strings.ReplaceAll(b64, " ", "")
-	bin, err := base64.StdEncoding.DecodeString(b64)
-	if err != nil {
-		return nil, err
-	}
-	img, err := png.Decode(bytes.NewReader(bin))
-	if err != nil {
-		return nil, err
-	}
-	return img, nil
-}
-
 // NewSpriteMap creates a new sprite map
-func NewSpriteMap(base64image, jsondata string) (SpriteMap, error) {
-	img, err := LoadImageFromString(base64image)
+func NewSpriteMap(imagedata []byte, jsondata string) (SpriteMap, error) {
+	img, err := png.Decode(bytes.NewReader(imagedata))
 	if err != nil {
 		return nil, err
 	}
