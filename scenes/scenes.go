@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mevdschee/minesweeper.go/clips"
-	"github.com/mevdschee/minesweeper.go/layers"
-	"github.com/mevdschee/minesweeper.go/sprites"
+	"github.com/mevdschee/ebiten-mines/clips"
+	"github.com/mevdschee/ebiten-mines/layers"
+	"github.com/mevdschee/ebiten-mines/sprites"
 )
 
 // Scene is a set of layers

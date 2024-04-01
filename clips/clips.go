@@ -5,8 +5,8 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	"github.com/mevdschee/minesweeper.go/sprites"
-	"github.com/mevdschee/minesweeper.go/touch"
+	"github.com/mevdschee/ebiten-mines/sprites"
+	"github.com/mevdschee/ebiten-mines/touch"
 )
 
 // Clip is a set of frames

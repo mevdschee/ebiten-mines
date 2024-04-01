@@ -1,4 +1,4 @@
-module github.com/mevdschee/minesweeper.go
+module github.com/mevdschee/ebiten-mines
 
 go 1.18
 

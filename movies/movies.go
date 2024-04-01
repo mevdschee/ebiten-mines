@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mevdschee/minesweeper.go/clips"
-	"github.com/mevdschee/minesweeper.go/scenes"
-	"github.com/mevdschee/minesweeper.go/sprites"
+	"github.com/mevdschee/ebiten-mines/clips"
+	"github.com/mevdschee/ebiten-mines/scenes"
+	"github.com/mevdschee/ebiten-mines/sprites"
 )
 
 // Movie is a set of scenes

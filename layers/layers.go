@@ -5,8 +5,8 @@ import (
 
 	"github.com/expr-lang/expr"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mevdschee/minesweeper.go/clips"
-	"github.com/mevdschee/minesweeper.go/sprites"
+	"github.com/mevdschee/ebiten-mines/clips"
+	"github.com/mevdschee/ebiten-mines/sprites"
 )
 
 // Layer is a set of layers

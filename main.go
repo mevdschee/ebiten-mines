@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mevdschee/minesweeper.go/clips"
-	"github.com/mevdschee/minesweeper.go/movies"
-	"github.com/mevdschee/minesweeper.go/sprites"
-	"github.com/mevdschee/minesweeper.go/touch"
+	"github.com/mevdschee/ebiten-mines/clips"
+	"github.com/mevdschee/ebiten-mines/movies"
+	"github.com/mevdschee/ebiten-mines/sprites"
+	"github.com/mevdschee/ebiten-mines/touch"
 )
 
 //go:embed winxpskin.png
