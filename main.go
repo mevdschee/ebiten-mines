@@ -471,7 +471,7 @@ func main() {
 	})
 	g.restart()
 	width, height := g.getSize()
-	ebiten.SetWindowTitle("Minesweeper.go")
+	ebiten.SetWindowTitle("Ebiten Mines")
 	ebiten.SetTPS(30)
 	ebiten.SetWindowSize(g.c.scale*width, g.c.scale*height)
 	icon, err := sprites.LoadImageFromString(minesIconImage)
