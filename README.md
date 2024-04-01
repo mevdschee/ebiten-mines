@@ -1,4 +1,4 @@
-# minesweeper.go
+# ebiten-mines
 
 ![minesweeper development screenshot](screenshot.jpg)
 
