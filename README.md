@@ -6,11 +6,11 @@ This is written using ebiten v2 in Go:
 
     sudo apt install golang
 
-To build/run the code you can execute:
+To run the code you can execute:
 
-    go run minesweeper.go
+    go run .
 
-To build/run the code in your browser (using WASM) you can execute:
+To run the code in your browser (using WASM) you can execute:
 
     bash build.sh
 
