@@ -160,10 +160,10 @@ func (g *game) setHandlers() {
 				if g.state == stateWon || g.state == stateLost {
 					return
 				}
-				g.button = buttonEvaluate
 				if g.tiles[py][px].marked {
 					return
 				}
+				g.button = buttonEvaluate
 				g.tiles[py][px].pressed = true
 				if g.tiles[py][px].open {
 					g.forEachNeighbour(px, py, func(x, y int) {
