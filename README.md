@@ -2,7 +2,7 @@
 
 Play the game here:
 
-https://www.maurits.vdschee.nl/ebiten-games/
+https://www.maurits.vdschee.nl/ebiten-mines/
 
 ![minesweeper development screenshot](screenshot.jpg)
 
