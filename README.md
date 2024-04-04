@@ -1,5 +1,9 @@
 # ebiten-mines
 
+Play the game here:
+
+https://www.maurits.vdschee.nl/ebiten-games/
+
 ![minesweeper development screenshot](screenshot.jpg)
 
 This is written using ebiten v2 in Go:
