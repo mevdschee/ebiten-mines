@@ -31,7 +31,7 @@ Compress the WASM file using (takes several seconds):
 
     brotli -f -Z --suffix=-compressed *.wasm
 
-Add the following `.htaccess` file:
+Add the following `.htaccess` file on the webserver:
 
     <FilesMatch "\.wasm$">
         RewriteEngine On
