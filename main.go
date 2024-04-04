@@ -185,8 +185,12 @@ func (g *game) setHandlers() {
 					return
 				}
 				g.button = buttonPlaying
-				if g.tiles[py][px].pressed {
-					g.onPressTile(px, py, false)
+				if g.tiles[py][px].open {
+					g.onPressTile(px, py, true)
+				} else {
+					if g.tiles[py][px].pressed {
+						g.onPressTile(px, py, false)
+					}
 				}
 				g.tiles[py][px].pressed = false
 			})

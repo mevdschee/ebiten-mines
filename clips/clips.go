@@ -184,6 +184,9 @@ func (c *Clip) Update() (err error) {
 		if hover && inpututil.MouseButtonPressDuration(ebiten.MouseButtonLeft) == ebiten.TPS()/2 {
 			c.onLongPress()
 		}
+		if hover && inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
+			c.onLongPress()
+		}
 	}
 	if c.onRelease != nil {
 		if hover && inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
