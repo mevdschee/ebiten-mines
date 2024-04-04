@@ -29,18 +29,18 @@ Install `brotli` command line compression tool using:
 
 Compress the WASM file using (takes several seconds):
 
-    brotli -f -Z --suffix=-compressed *.wasm
+    brotli -f -Z --suffix=-brotli *.wasm
 
 Add the following `.htaccess` file on the webserver:
 
     <FilesMatch "\.wasm$">
         RewriteEngine On
         RewriteCond %{HTTP:Accept-Encoding} br
-        RewriteCond %{REQUEST_FILENAME}-compressed -f
-        RewriteRule (.*) $1-compressed
+        RewriteCond %{REQUEST_FILENAME}-brotli -f
+        RewriteRule (.*) $1-brotli
     </FilesMatch>
     
-    <FilesMatch "\.wasm-compressed$">
+    <FilesMatch "\.wasm-brotli$">
         Header set Content-Encoding br
         Header set Content-Type application/wasm
         Header append Vary Accept-Encoding
