@@ -23,6 +23,14 @@ See also: https://ebiten.org/documents/install.html
     
 ### Brotli
 
+Install `brotli` command line compression tool using:
+
+    sudo apt install brotli
+
+Compress the WASM file using (takes several seconds):
+
+    brotli -f -Z --suffix=-compressed *.wasm
+
 Add the following `.htaccess` file:
 
     <FilesMatch "\.wasm$">
