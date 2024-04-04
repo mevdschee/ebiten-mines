@@ -1,6 +1,6 @@
 # ebiten-mines
 
-Play the game here:
+Play the game here (slow download, 1.7MB):
 
 https://www.maurits.vdschee.nl/ebiten-mines/
 
