@@ -3,6 +3,7 @@ echo building $TARGET...
 mkdir -p build
 TARGET=`basename "$PWD"`
 GOOS=js GOARCH=wasm go build -o build/$TARGET.wasm .
+#brotli -f -Z --suffix=-compressed build/ebiten-mines.wasm
 cp $(go env GOROOT)/misc/wasm/wasm_exec.js build
 touch build/favicon.ico
 cat << EOF > build/index.html
