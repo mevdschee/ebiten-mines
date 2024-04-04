@@ -21,3 +21,29 @@ On Debian/Ubuntu I had to install the following packages:
 See also: https://ebiten.org/documents/install.html
 
     
+### Brotli
+
+Add the following `.htaccess` file:
+
+    <FilesMatch "\.wasm$">
+        RewriteEngine On
+        RewriteCond %{HTTP:Accept-Encoding} br
+        RewriteCond %{REQUEST_FILENAME}-compressed -f
+        RewriteRule (.*) $1-compressed
+    </FilesMatch>
+    
+    <FilesMatch "\.wasm-compressed$">
+        Header set Content-Encoding br
+        Header set Content-Type application/wasm
+        Header append Vary Accept-Encoding
+    </FilesMatch>
+
+Make sure that `mod_headers` and `mod_rewrite` are enabled.
+
+    sudo a2enmod rewrite headers
+
+Restart the apache webserver if the modules were activated using:
+
+    sudo systemctl restart apache2
+
+NB: Most webservers have the modules enabled by default.
