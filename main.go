@@ -105,6 +105,8 @@ const (
 	iconQuestionPressed
 )
 
+var clipCache map[string][]*clips.Clip
+
 func (g *game) getSize() (int, int) {
 	return g.c.width*16 + 12*2, g.c.height*16 + 11*3 + 33
 }
@@ -130,10 +132,18 @@ func (g *game) init() {
 }
 
 func (g *game) getClips(clip string) []*clips.Clip {
+	if clipCache == nil {
+		clipCache = map[string][]*clips.Clip{}
+	}
+	cache, ok := clipCache[clip]
+	if ok {
+		return cache
+	}
 	clips, err := g.movie.GetClips("game", "fg", clip)
 	if err != nil {
 		log.Fatal(err)
 	}
+	clipCache[clip] = clips
 	return clips
 }
 
