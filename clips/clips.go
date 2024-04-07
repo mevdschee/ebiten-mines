@@ -113,9 +113,7 @@ func NewScaled(sprite *sprites.Sprite, name string, x, y, width, height int) *Cl
 // Draw draws the clip
 func (c *Clip) Draw(screen *ebiten.Image) {
 	img := c.frames[c.frame]
-	srcWidth, srcHeight := img.Bounds().Dx(), img.Bounds().Dy()
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(float64(c.width)/float64(srcWidth), float64(c.height)/float64(srcHeight))
 	op.GeoM.Translate(float64(c.x), float64(c.y))
 	screen.DrawImage(img, op)
 }
